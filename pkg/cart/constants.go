@@ -1,41 +1,27 @@
 package cart
 
 const (
-	EntryPointAddrStart = 0x100
-	EntryPointAddrEnd   = 0x103
-
-	NintendoLogoAddrStart = 0x104
-	NintendoLogoAddrEnd   = 0x133
-
-	TitleAddrStart = 0x134
-	TitleAddrEnd   = 0x143
-
-	ManufacturerAddrStart = 0x13F
-	ManufacturerAddrEnd   = 0x142
-
-	CgbFlagAddr = 0x143
-
-	NewLicenseeCodeAddrStart = 0x144
-	NewLicenseeCodeAddrEnd   = 0x145
-
-	SgbFlagAddr = 0x146
-
-	CartridgeTypeAddr = 0x147
-
-	RomSizeAddr = 0x148
-
-	RamSizeAddr = 0x149
-
-	DestinationCodeAddr = 0x14A
-
-	OldLicenseeCodeAddr = 0x14B
-
-	MaskRomVersionNumberAddr = 0x14C
-
-	HeaderChecksumAddr = 0x14D
-
-	GlobalChecksumAddrStart = 0x14E
-	GlobalChecksumAddrEnd   = 0x14D
+	EntryPointAddrStart      uint16 = 0x100
+	EntryPointAddrEnd        uint16 = 0x103
+	NintendoLogoAddrStart    uint16 = 0x104
+	NintendoLogoAddrEnd      uint16 = 0x133
+	TitleAddrStart           uint16 = 0x134
+	TitleAddrEnd             uint16 = 0x143
+	ManufacturerAddrStart    uint16 = 0x13F
+	ManufacturerAddrEnd      uint16 = 0x142
+	CgbFlagAddr              uint16 = 0x143
+	NewLicenseeCodeAddrStart uint16 = 0x144
+	NewLicenseeCodeAddrEnd   uint16 = 0x145
+	SgbFlagAddr              uint16 = 0x146
+	CartridgeTypeAddr        uint16 = 0x147
+	RomSizeAddr              uint16 = 0x148
+	RamSizeAddr              uint16 = 0x149
+	DestinationCodeAddr      uint16 = 0x14A
+	OldLicenseeCodeAddr      uint16 = 0x14B
+	MaskRomVersionNumberAddr uint16 = 0x14C
+	HeaderChecksumAddr       uint16 = 0x14D
+	GlobalChecksumAddrStart  uint16 = 0x14E
+	GlobalChecksumAddrEnd    uint16 = 0x14D
 )
 
 var NewLicenseeCodePublishers = map[uint16]string{

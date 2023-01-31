@@ -84,6 +84,16 @@ func NewCartridge(romPath string) (*Cartridge, error) {
 		return nil, fmt.Errorf("error while loading ROM cartridges - %v", err)
 	}
 
+	// Do checksum to ensure cartridge integrity
+	var checksum uint8
+	for address := TitleAddrStart; address <= MaskRomVersionNumberAddr; address++ {
+		checksum = checksum - romData[address] - 1
+	}
+
+	if checksum != romData[HeaderChecksumAddr] {
+		return nil, fmt.Errorf("calculated header checksum doesn't correspond with cartridge checksum")
+	}
+
 	return &Cartridge{
 		CartridgeHeader: parseCartridgeHeader(romData),
 		rawData:         romData,
