@@ -9,8 +9,8 @@ import (
 
 const (
 	testRomPath          string = "/home/mikeletux/development/goboy/roms/tetris.gb"
-	tetrisTitle                 = "TETRIS"
-	licenseeCodeReadable        = "Nintendo"
+	tetrisTitle          string = "TETRIS"
+	licenseeCodeReadable string = "Nintendo"
 )
 
 func TestCartridge(t *testing.T) {
