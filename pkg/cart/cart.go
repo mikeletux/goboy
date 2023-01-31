@@ -1,6 +1,7 @@
 package cart
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 )
@@ -9,9 +10,9 @@ type CartridgeHeader struct {
 	// EntryPoint instruction for the boot ROM.
 	EntryPoint [4]byte
 	// NintendoLogo is the bitmap image that is displayed when the Game Boy is powered on.
-	NintendoLogo [30]byte
+	NintendoLogo [48]byte
 	// Title contains ASCII representation of the upper case name of the game.
-	Title [10]byte
+	Title [16]byte
 	// ManufacturerCode in older cartridges was part of the title. The purpose of this si unknown.
 	ManufacturerCode [4]byte
 	// CgbFlag in older cartridges was part of the title. It decides whether enable color mode.
@@ -37,6 +38,37 @@ type CartridgeHeader struct {
 	// GlobalChecksum contain a 16-bit (big-endian) checksum simply computed as the sum of all the bytes of
 	// the cartridge ROM (except these two checksum bytes).
 	GlobalChecksum [2]byte
+}
+
+func (c *CartridgeHeader) GetReadableTitle() string {
+	return string(c.Title[:])
+}
+
+func (c *CartridgeHeader) SGBFlag() bool {
+	if c.SgbFlag == 0x3 {
+		return true
+	}
+	return false
+}
+
+func (c *CartridgeHeader) GetReadableCartridgeType() string {
+	return CartridgeType[c.CartridgeType]
+}
+
+// GetReadableRomSize returns how much ROM is present in the cartridge in KiB
+func (c *CartridgeHeader) GetReadableRomSize() uint {
+	return 32 * (1 << RomSize[c.RomSize])
+}
+
+func (c *CartridgeHeader) GetReadableRamSize() string {
+	return RamSize[c.RamSize]
+}
+
+func (c *CartridgeHeader) GetReadableLicenseeCode() string {
+	if c.OldLicenseeCode == 0x33 {
+		return NewLicenseeCodePublishers[binary.BigEndian.Uint16(c.NewLicenseeCode[:])]
+	}
+	return OldLicenseeCode[c.OldLicenseeCode]
 }
 
 // Cartridge implements all the logic regarding GB cartridges

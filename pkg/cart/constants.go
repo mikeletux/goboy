@@ -38,7 +38,7 @@ const (
 	GlobalChecksumAddrEnd   = 0x14D
 )
 
-var NewLicenseeCodePublishers = map[byte]string{
+var NewLicenseeCodePublishers = map[uint16]string{
 	0x0:  "None",
 	0x1:  "Nintendo R&D1",
 	0x8:  "Capcom",
@@ -135,7 +135,7 @@ var CartridgeType = map[byte]string{
 
 // RomSize ...
 // In most cases, the ROM size is given by 32 KiB × (1 << <value>):
-var RomSize = map[byte]int{
+var RomSize = map[byte]uint{
 	0x0:  2,
 	0x1:  4,
 	0x2:  8,
