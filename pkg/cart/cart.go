@@ -71,6 +71,11 @@ func (c *CartridgeHeader) GetReadableLicenseeCode() string {
 	return OldLicenseeCode[c.OldLicenseeCode]
 }
 
+type CartridgeInterface interface {
+	CartRead(address uint16) byte
+	CartWrite(address uint16, value byte)
+}
+
 // Cartridge implements all the logic regarding GB cartridges
 type Cartridge struct {
 	CartridgeHeader *CartridgeHeader
@@ -98,6 +103,17 @@ func NewCartridge(romPath string) (*Cartridge, error) {
 		CartridgeHeader: parseCartridgeHeader(romData),
 		rawData:         romData,
 	}, nil
+}
+
+// CartRead returns a given byte from the cartridge given a memory address
+func (c *Cartridge) CartRead(address uint16) byte {
+	// For now just ROM only type supported
+	return c.rawData[address]
+}
+
+// CartWrite write a value in the address specified
+func (c *Cartridge) CartWrite(address uint16, value byte) {
+	// For now just ROM only type supported
 }
 
 func parseCartridgeHeader(cartridgeRawData []byte) *CartridgeHeader {
