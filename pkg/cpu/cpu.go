@@ -22,22 +22,22 @@ type Registers struct {
 
 // GetAF returns a 16Bit value from CPU registers A and F
 func (r *Registers) GetAF() uint16 {
-	return uint16(r.A<<8 + r.F)
+	return uint16(r.A)<<8 | uint16(r.F)
 }
 
 // GetBC returns a 16Bit value from CPU registers B and C
 func (r *Registers) GetBC() uint16 {
-	return uint16(r.B<<8 + r.C)
+	return uint16(r.B)<<8 | uint16(r.C)
 }
 
 // GetDE returns a 16Bit value from CPU registers D and E
 func (r *Registers) GetDE() uint16 {
-	return uint16(r.D<<8 + r.E)
+	return uint16(r.D)<<8 | uint16(r.E)
 }
 
 // GetHL returns a 16Bit value from CPU registers H and L
 func (r *Registers) GetHL() uint16 {
-	return uint16(r.H<<8 + r.L)
+	return uint16(r.H)<<8 | uint16(r.L)
 }
 
 // SetAF sets a 16Bit value between registers A and F
@@ -68,7 +68,7 @@ func (r *Registers) FetchDataFromRegisters(registerType int) (uint16, error) {
 	case rtF:
 		return uint16(r.F), nil
 	case rtB:
-		return uint16(r.A), nil
+		return uint16(r.B), nil
 	case rtC:
 		return uint16(r.C), nil
 	case rtD:
@@ -123,7 +123,7 @@ type CPU struct {
 	Stepping bool
 }
 
-func CPUInit(bus bus.DataBusInterface) *CPU {
+func Init(bus bus.DataBusInterface) *CPU {
 	return &CPU{
 		Registers: &Registers{},
 		Bus:       bus,
@@ -142,7 +142,10 @@ func (c *CPU) Step() bool {
 		c.CurrentInstruction = instruction
 
 		// Fetch data
-		c.fetchData()
+		err := c.fetchData()
+		if err != nil {
+			misc.NoImplemented(err.Error(), -7)
+		}
 
 		// Execute instruction
 	}
@@ -174,13 +177,12 @@ func (c *CPU) fetchData() error {
 		// emu_cycles(1)
 		var high = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
 		// emu_cycles(1)
-		c.FetchedData = uint16(low | high<<8)
+		c.FetchedData = uint16(low) | uint16(high)<<8
 		return nil
 
 	// To be done still
 	default:
-		misc.NoImplemented(fmt.Sprintf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode),
-			-7)
+		return fmt.Errorf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode)
 	}
 
 	return nil
