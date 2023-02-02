@@ -1,5 +1,11 @@
 package cpu
 
+import (
+	"fmt"
+	"github.com/mikeletux/goboy/pkg/bus"
+	"github.com/mikeletux/goboy/pkg/misc"
+)
+
 // Registers model all CPU registers from Gameboy
 type Registers struct {
 	A  byte   // Accumulator
@@ -54,6 +60,49 @@ func (r *Registers) SetHL(value uint16) {
 	r.H, r.L = getHighAndLowBytes(value)
 }
 
+// FetchDataFromRegisters returns the register value given its register type constant
+func (r *Registers) FetchDataFromRegisters(registerType int) (uint16, error) {
+	switch registerType {
+	case rtA:
+		return uint16(r.A), nil
+	case rtF:
+		return uint16(r.F), nil
+	case rtB:
+		return uint16(r.A), nil
+	case rtC:
+		return uint16(r.C), nil
+	case rtD:
+		return uint16(r.D), nil
+	case rtE:
+		return uint16(r.E), nil
+	case rtH:
+		return uint16(r.H), nil
+	case rtL:
+		return uint16(r.L), nil
+	case rtAF:
+		return r.GetAF(), nil
+	case rtBC:
+		return r.GetBC(), nil
+	case rtDE:
+		return r.GetDE(), nil
+	case rtHL:
+		return r.GetHL(), nil
+	case rtSP:
+		return r.SP, nil
+	case rtPC:
+		return r.PC, nil
+	}
+
+	return 0, fmt.Errorf("the processor register provided doesn't exist")
+}
+
+// GetPCAndIncrement returns the PC and increments it by 1
+func (r *Registers) GetPCAndIncrement() (pc uint16) {
+	pc = r.PC
+	r.PC++
+	return
+}
+
 func getHighAndLowBytes(value uint16) (high, low byte) {
 	high, low = byte(value>>8), byte(value&0xFF)
 	return
@@ -61,4 +110,78 @@ func getHighAndLowBytes(value uint16) (high, low byte) {
 
 type CPU struct {
 	Registers *Registers
+	Bus       bus.DataBusInterface
+
+	// Current fetch
+	FetchedData          uint16
+	MemoryDestination    uint16
+	DestinationIsMemory  bool
+	CurrentOperationCode byte
+	CurrentInstruction   Instruction
+
+	Halted   bool
+	Stepping bool
+}
+
+func CPUInit(bus bus.DataBusInterface) *CPU {
+	return &CPU{
+		Registers: &Registers{},
+		Bus:       bus,
+	}
+}
+
+func (c *CPU) Step() bool {
+	if !c.Halted {
+		// Fetch instruction
+		c.CurrentOperationCode = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		instruction, ok := instructionsMap[c.CurrentOperationCode]
+		if !ok {
+			misc.NoImplemented(fmt.Sprintf("instruction %d doesn't exist", c.CurrentOperationCode),
+				-7)
+		}
+		c.CurrentInstruction = instruction
+
+		// Fetch data
+		c.fetchData()
+
+		// Execute instruction
+	}
+	return true // Check this
+}
+
+func (c *CPU) fetchData() error {
+	c.MemoryDestination = 0
+	c.DestinationIsMemory = false
+
+	switch c.CurrentInstruction.AddressingMode {
+	case amImp:
+		return nil
+
+	case amR:
+		fetchedData, err := c.Registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
+		c.FetchedData = fetchedData
+
+	case amRnD8:
+		c.FetchedData = uint16(c.Bus.BusRead(c.Registers.GetPCAndIncrement()))
+		// emu_cycles(1)
+		return nil
+
+	case amD16:
+		var low = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		// emu_cycles(1)
+		var high = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		// emu_cycles(1)
+		c.FetchedData = uint16(low | high<<8)
+		return nil
+
+	// To be done still
+	default:
+		misc.NoImplemented(fmt.Sprintf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode),
+			-7)
+	}
+
+	return nil
 }

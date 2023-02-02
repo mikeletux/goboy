@@ -7,6 +7,11 @@ import (
 	"strconv"
 )
 
+type DataBusInterface interface {
+	BusRead(address uint16) byte
+	BusWrite(address uint16, value byte)
+}
+
 // Bus represents the whole Gameboy bus
 type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
@@ -28,7 +33,7 @@ func (b *Bus) BusRead(address uint16) byte {
 
 	// NO IMPLEMENTED
 	misc.NoImplemented(fmt.Sprintf("this bus address is not implemented yet to read. Addr -> %s",
-		strconv.FormatInt(int64(address), 16)))
+		strconv.FormatInt(int64(address), 16)), -5)
 
 	return 0
 }
@@ -42,5 +47,5 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 
 	// NO IMPLEMENTED
 	misc.NoImplemented(fmt.Sprintf("this bus address is not implemented yet to write. Addr -> %s",
-		strconv.FormatInt(int64(address), 16)))
+		strconv.FormatInt(int64(address), 16)), -5)
 }
