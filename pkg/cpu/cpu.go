@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/log"
-	"github.com/mikeletux/goboy/pkg/misc"
 )
 
 // Registers model all CPU registers from Gameboy
@@ -59,6 +58,33 @@ func (r *Registers) SetDE(value uint16) {
 // SetHL sets a 16Bit value between registers H and L
 func (r *Registers) SetHL(value uint16) {
 	r.H, r.L = getHighAndLowBytes(value)
+}
+
+// SetFZ sets Zero flag (Z) from F to bit value. True means 1 whilst false means 0.
+func (r *Registers) SetFZ(bit bool) {
+	r.F = getBitMask(r.F, 7, bit)
+}
+
+// SetFN sets Subtraction flag (N) from F to bit value. True means 1 whilst false means 0.
+func (r *Registers) SetFN(bit bool) {
+	r.F = getBitMask(r.F, 6, bit)
+}
+
+// SetFH sets Half Carry flag (H) from F to bit value. True means 1 whilst false means 0.
+func (r *Registers) SetFH(bit bool) {
+	r.F = getBitMask(r.F, 5, bit)
+}
+
+// SetFC sets Carry flag (C) from F to bit value. True means 1 whilst false means 0.
+func (r *Registers) SetFC(bit bool) {
+	r.F = getBitMask(r.F, 4, bit)
+}
+
+func getBitMask(regValue byte, bitNumber int, bit bool) byte {
+	if bit {
+		return regValue | 1<<bitNumber
+	}
+	return regValue & ^(1 << bitNumber)
 }
 
 // FetchDataFromRegisters returns the register value given its register type constant
@@ -139,18 +165,20 @@ func (c *CPU) Step() bool {
 		c.CurrentOperationCode = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		instruction, ok := instructionsMap[c.CurrentOperationCode]
 		if !ok {
-			misc.NoImplemented(fmt.Sprintf("instruction %d doesn't exist", c.CurrentOperationCode),
-				-7)
+			c.logger.Fatalf("instruction %d doesn't exist", c.CurrentOperationCode)
 		}
 		c.CurrentInstruction = instruction
+		c.logger.Debugf("instruction to be execute: %s", c.CurrentInstruction.Mnemonic)
 
 		// Fetch data
 		err := c.fetchData()
 		if err != nil {
-			misc.NoImplemented(err.Error(), -7)
+			c.logger.Fatal(err)
 		}
 
 		// Execute instruction
+		// Show CPU registers after executing
+
 	}
 	return true // Check this
 }
@@ -169,6 +197,7 @@ func (c *CPU) fetchData() error {
 			return err
 		}
 		c.FetchedData = fetchedData
+		return nil
 
 	case amRnD8:
 		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
@@ -188,7 +217,7 @@ func (c *CPU) fetchData() error {
 		return fmt.Errorf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode)
 	}
 
-	return nil
+	return nil // This return should not be reached ever
 }
 
 func (c *CPU) logRegisterValues() {

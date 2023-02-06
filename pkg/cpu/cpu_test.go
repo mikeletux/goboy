@@ -94,6 +94,62 @@ func TestGetSetRegisters(t *testing.T) {
 	}
 }
 
+func TestSetFlagsFromFlagsRegister(t *testing.T) {
+	// Init CPU
+	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu.registers = &Registers{
+		F: 0x0,
+	}
+
+	cpu.registers.SetFZ(true) // Now register should be 0x80
+	result := reflect.DeepEqual(cpu.registers.F, byte(0x80))
+	if !result {
+		t.Errorf("got: %X expected: %X for flag Z on F register", cpu.registers.F, 0x80)
+	}
+
+	cpu.registers.SetFN(true) // Now register should be 0xC0
+	result = reflect.DeepEqual(cpu.registers.F, byte(0xC0))
+	if !result {
+		t.Errorf("got: %X expected: %X for flag N on F register", cpu.registers.F, 0xC0)
+	}
+
+	cpu.registers.SetFH(true) // Now register should be 0xE0
+	result = reflect.DeepEqual(cpu.registers.F, byte(0xE0))
+	if !result {
+		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0xE0)
+	}
+
+	cpu.registers.SetFC(true) // Now register should be 0xF0
+	result = reflect.DeepEqual(cpu.registers.F, byte(0xF0))
+	if !result {
+		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0xF0)
+	}
+
+	cpu.registers.SetFZ(false) // Now register should be 0x70
+	result = reflect.DeepEqual(cpu.registers.F, byte(0x70))
+	if !result {
+		t.Errorf("got: %X expected: %X for flag Z on F register", cpu.registers.F, 0x70)
+	}
+
+	cpu.registers.SetFN(false) // Now register should be 0x30
+	result = reflect.DeepEqual(cpu.registers.F, byte(0x30))
+	if !result {
+		t.Errorf("got: %X expected: %X for flag N on F register", cpu.registers.F, 0x30)
+	}
+
+	cpu.registers.SetFH(false) // Now register should be 0x10
+	result = reflect.DeepEqual(cpu.registers.F, byte(0x10))
+	if !result {
+		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0x10)
+	}
+
+	cpu.registers.SetFC(false) // Now register should be 0x00
+	result = reflect.DeepEqual(cpu.registers.F, byte(0x00))
+	if !result {
+		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0x00)
+	}
+}
+
 func TestFetchDataFromRegisters(t *testing.T) {
 	// Init CPU
 	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
