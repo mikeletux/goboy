@@ -155,7 +155,7 @@ func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
 	return &CPU{
 		registers: &Registers{},
 		bus:       bus,
-		logger:    log.NewBuiltinStdoutLogger(),
+		logger:    logger,
 	}
 }
 
@@ -168,7 +168,7 @@ func (c *CPU) Step() bool {
 			c.logger.Fatalf("instruction %d doesn't exist", c.CurrentOperationCode)
 		}
 		c.CurrentInstruction = instruction
-		c.logger.Debugf("instruction to be execute: %s", c.CurrentInstruction.Mnemonic)
+		c.logger.Debugf("instruction to be executed: %s", c.CurrentInstruction.Mnemonic)
 
 		// Fetch data
 		err := c.fetchData()
