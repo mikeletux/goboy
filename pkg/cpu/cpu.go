@@ -201,14 +201,16 @@ func (c *CPU) fetchData() error {
 
 	case amRnD8:
 		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
-		// emu_cycles(1)
+		c.emulateCpuCycles(1)
 		return nil
 
 	case amD16:
 		var low = c.bus.BusRead(c.registers.GetPCAndIncrement())
-		// emu_cycles(1)
+		c.emulateCpuCycles(1)
+
 		var high = c.bus.BusRead(c.registers.GetPCAndIncrement())
-		// emu_cycles(1)
+		c.emulateCpuCycles(1)
+
 		c.FetchedData = uint16(low) | uint16(high)<<8
 		return nil
 
@@ -218,6 +220,10 @@ func (c *CPU) fetchData() error {
 	}
 
 	return nil // This return should not be reached ever
+}
+
+func (c *CPU) emulateCpuCycles(numCycles int) { // TO BE IMPLEMENTED
+	return
 }
 
 func (c *CPU) logRegisterValues() {
