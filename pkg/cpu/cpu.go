@@ -65,9 +65,19 @@ func (r *Registers) SetFZ(bit bool) {
 	r.F = getBitMask(r.F, 7, bit)
 }
 
+// GetFZ returns if the Z bit is set or not.
+func (r *Registers) GetFZ() bool {
+	return getBitRegister(r.F, 7)
+}
+
 // SetFN sets Subtraction flag (N) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFN(bit bool) {
 	r.F = getBitMask(r.F, 6, bit)
+}
+
+// GetFN returns if the N bit is set or not.
+func (r *Registers) GetFN() bool {
+	return getBitRegister(r.F, 6)
 }
 
 // SetFH sets Half Carry flag (H) from F to bit value. True means 1 whilst false means 0.
@@ -75,9 +85,19 @@ func (r *Registers) SetFH(bit bool) {
 	r.F = getBitMask(r.F, 5, bit)
 }
 
+// GetFH returns if the H bit is set or not.
+func (r *Registers) GetFH() bool {
+	return getBitRegister(r.F, 5)
+}
+
 // SetFC sets Carry flag (C) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFC(bit bool) {
 	r.F = getBitMask(r.F, 4, bit)
+}
+
+// GetFC returns if the C bit is set or not.
+func (r *Registers) GetFC() bool {
+	return getBitRegister(r.F, 4)
 }
 
 func getBitMask(regValue byte, bitNumber int, bit bool) byte {
@@ -85,6 +105,13 @@ func getBitMask(regValue byte, bitNumber int, bit bool) byte {
 		return regValue | 1<<bitNumber
 	}
 	return regValue & ^(1 << bitNumber)
+}
+
+func getBitRegister(regValue byte, bitNumber int) bool {
+	if (regValue & (1 << bitNumber)) == 0x0 {
+		return false
+	}
+	return true
 }
 
 // FetchDataFromRegisters returns the register value given its register type constant
@@ -141,11 +168,12 @@ type CPU struct {
 	logger    log.Logger
 
 	// Current fetch
-	FetchedData          uint16
-	MemoryDestination    uint16
-	DestinationIsMemory  bool
-	CurrentOperationCode byte
-	CurrentInstruction   Instruction
+	FetchedData               uint16
+	MemoryDestination         uint16
+	DestinationIsMemory       bool
+	CurrentOperationCode      byte
+	CurrentInstruction        Instruction
+	EnableMasterInterruptions bool
 
 	Halted   bool
 	Stepping bool
@@ -153,9 +181,11 @@ type CPU struct {
 
 func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
 	return &CPU{
-		registers: &Registers{},
-		bus:       bus,
-		logger:    logger,
+		registers: &Registers{
+			PC: cpuEntryPoint, // The Gameboy entry point is 0x100
+		},
+		bus:    bus,
+		logger: logger,
 	}
 }
 
@@ -165,7 +195,7 @@ func (c *CPU) Step() bool {
 		c.CurrentOperationCode = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		instruction, ok := instructionsMap[c.CurrentOperationCode]
 		if !ok {
-			c.logger.Fatalf("instruction %d doesn't exist", c.CurrentOperationCode)
+			c.logger.Fatalf("instruction with code %X doesn't exist", c.CurrentOperationCode)
 		}
 		c.CurrentInstruction = instruction
 		c.logger.Debugf("instruction to be executed: %s", c.CurrentInstruction.Mnemonic)
@@ -177,10 +207,7 @@ func (c *CPU) Step() bool {
 		}
 
 		// Execute instruction
-		execFunc, exist := execInstructionMap[instruction.Type]
-		if !exist { // Check if instruction has an entry on execInstructionMap.
-			c.logger.Fatalf("instruction %s doesn't exist in execInstructionMap", instruction.Mnemonic)
-		}
+		execFunc := instruction.execFunc
 
 		if execFunc == nil { // If nil means that the instruction has not been implemented yet.
 			c.logger.Fatalf("instruction %s has not been implemented yet", instruction.Mnemonic)
@@ -237,6 +264,6 @@ func (c *CPU) emulateCpuCycles(numCycles int) { // TO BE IMPLEMENTED
 }
 
 func (c *CPU) logRegisterValues() {
-	c.logger.Debugf("AF:%X BC:%X DE:%X HL%X",
-		c.registers.GetAF(), c.registers.GetBC(), c.registers.GetDE(), c.registers.GetHL())
+	c.logger.Debugf("[AF:%X] [BC:%X] [DE:%X] [HL:%X] [SP:%X] [PC:%X]",
+		c.registers.GetAF(), c.registers.GetBC(), c.registers.GetDE(), c.registers.GetHL(), c.registers.SP, c.registers.PC)
 }
