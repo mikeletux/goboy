@@ -275,6 +275,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 			CurrentInstruction: Instruction{
 				Type:           inNop,
 				AddressingMode: amImp,
+				Mnemonic:       "NOP",
 			},
 		},
 		{
@@ -284,6 +285,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 			CurrentInstruction: Instruction{
 				Type:           inJp,
 				AddressingMode: amD16,
+				Mnemonic:       "JP a16",
 			},
 		},
 		{
@@ -293,6 +295,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inXor,
 				AddressingMode: amR,
 				RegisterType1:  rtA,
+				Mnemonic:       "XOR A",
 			},
 		},
 		{
@@ -303,6 +306,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inLd,
 				AddressingMode: amRnD8,
 				RegisterType1:  rtC,
+				Mnemonic:       "LD C, d8",
 			},
 		},
 		{
@@ -312,6 +316,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inDec,
 				AddressingMode: amR,
 				RegisterType1:  rtB,
+				Mnemonic:       "DEC B",
 			},
 		},
 	}
