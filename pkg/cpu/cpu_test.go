@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"github.com/mikeletux/goboy/pkg/log"
 	"reflect"
 	"testing"
 )
@@ -29,73 +30,73 @@ const (
 
 func TestGetSetRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{})
+	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
 
 	// Test GetAF()
-	got := cpu.Registers.GetAF()
+	got := cpu.registers.GetAF()
 	if got != AFTestData {
 		t.Errorf("got: %d, expected %d", got, AFTestData)
 	}
 
 	// Test GetBC()
-	got = cpu.Registers.GetBC()
+	got = cpu.registers.GetBC()
 	if got != BCTestData {
 		t.Errorf("got: %d, expected %d", got, BCTestData)
 	}
 
 	// Test GetDE()
-	got = cpu.Registers.GetDE()
+	got = cpu.registers.GetDE()
 	if got != DETestData {
 		t.Errorf("got: %d, expected %d", got, DETestData)
 	}
 
 	// Test GetHL()
-	got = cpu.Registers.GetHL()
+	got = cpu.registers.GetHL()
 	if got != HLTestData {
 		t.Errorf("got: %d, expected %d", got, HLTestData)
 	}
 
 	// Set all registers to O
-	cpu.Registers.A = 0
-	cpu.Registers.F = 0
-	cpu.Registers.B = 0
-	cpu.Registers.C = 0
-	cpu.Registers.D = 0
-	cpu.Registers.E = 0
-	cpu.Registers.H = 0
-	cpu.Registers.L = 0
+	cpu.registers.A = 0
+	cpu.registers.F = 0
+	cpu.registers.B = 0
+	cpu.registers.C = 0
+	cpu.registers.D = 0
+	cpu.registers.E = 0
+	cpu.registers.H = 0
+	cpu.registers.L = 0
 
 	// Test SetAF
-	cpu.Registers.SetAF(AFTestData)
-	if cpu.Registers.A != ATestData || cpu.Registers.F != FTestData {
-		t.Errorf("got: A:%d F:%d, expected A:%d F:%d", cpu.Registers.A, cpu.Registers.F, ATestData, FTestData)
+	cpu.registers.SetAF(AFTestData)
+	if cpu.registers.A != ATestData || cpu.registers.F != FTestData {
+		t.Errorf("got: A:%d F:%d, expected A:%d F:%d", cpu.registers.A, cpu.registers.F, ATestData, FTestData)
 	}
 
 	// Test SetBC
-	cpu.Registers.SetBC(BCTestData)
-	if cpu.Registers.B != BTestData || cpu.Registers.C != CTestData {
-		t.Errorf("got: B:%d C:%d, expected B:%d C:%d", cpu.Registers.B, cpu.Registers.C, BTestData, CTestData)
+	cpu.registers.SetBC(BCTestData)
+	if cpu.registers.B != BTestData || cpu.registers.C != CTestData {
+		t.Errorf("got: B:%d C:%d, expected B:%d C:%d", cpu.registers.B, cpu.registers.C, BTestData, CTestData)
 	}
 
 	// Test SetDE
-	cpu.Registers.SetDE(DETestData)
-	if cpu.Registers.D != DTestData || cpu.Registers.E != ETestData {
-		t.Errorf("got: D:%d E:%d, expected D:%d E:%d", cpu.Registers.D, cpu.Registers.E, DTestData, ETestData)
+	cpu.registers.SetDE(DETestData)
+	if cpu.registers.D != DTestData || cpu.registers.E != ETestData {
+		t.Errorf("got: D:%d E:%d, expected D:%d E:%d", cpu.registers.D, cpu.registers.E, DTestData, ETestData)
 	}
 
 	// Test SetHL
-	cpu.Registers.SetHL(HLTestData)
-	if cpu.Registers.H != HTestData || cpu.Registers.L != LTestData {
-		t.Errorf("got: H:%d L:%d, expected H:%d L:%d", cpu.Registers.H, cpu.Registers.L, HTestData, LTestData)
+	cpu.registers.SetHL(HLTestData)
+	if cpu.registers.H != HTestData || cpu.registers.L != LTestData {
+		t.Errorf("got: H:%d L:%d, expected H:%d L:%d", cpu.registers.H, cpu.registers.L, HTestData, LTestData)
 	}
 }
 
 func TestFetchDataFromRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{})
+	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
@@ -152,7 +153,7 @@ func TestFetchDataFromRegisters(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got, err := cpu.Registers.FetchDataFromRegisters(testCase.registerType)
+		got, err := cpu.registers.FetchDataFromRegisters(testCase.registerType)
 		if err == nil {
 			if testCase.hasError {
 				t.Errorf("the test should've returned an error but it didn't")
@@ -171,23 +172,23 @@ func TestFetchDataFromRegisters(t *testing.T) {
 }
 
 func initCPURegistersWithTestData(cpu *CPU) {
-	cpu.Registers.A = ATestData
-	cpu.Registers.F = FTestData
-	cpu.Registers.B = BTestData
-	cpu.Registers.C = CTestData
-	cpu.Registers.D = DTestData
-	cpu.Registers.E = ETestData
-	cpu.Registers.H = HTestData
-	cpu.Registers.L = LTestData
+	cpu.registers.A = ATestData
+	cpu.registers.F = FTestData
+	cpu.registers.B = BTestData
+	cpu.registers.C = CTestData
+	cpu.registers.D = DTestData
+	cpu.registers.E = ETestData
+	cpu.registers.H = HTestData
+	cpu.registers.L = LTestData
 }
 
 func TestGetPCAndIncrement(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{})
-	cpu.Registers.PC = PCTestData
+	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu.registers.PC = PCTestData
 
 	for i := uint16(0); i < 4; i++ {
-		got := cpu.Registers.GetPCAndIncrement()
+		got := cpu.registers.GetPCAndIncrement()
 		if got != PCTestData+i {
 			t.Errorf("got: %d expected %d in the PC", got, PCTestData+i)
 		}
@@ -260,7 +261,7 @@ func TestCPU_StepInstruction(t *testing.T) {
 	}
 
 	// Init CPU
-	cpu := Init(busMock)
+	cpu := Init(busMock, log.NewBuiltinStdoutLogger())
 	for _, testCase := range testCases {
 		_ = cpu.Step()
 

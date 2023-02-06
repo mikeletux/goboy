@@ -9,7 +9,7 @@ package bus
 // E000	FDFF	Mirror of C000~DDFF (ECHO RAM)	Nintendo says use of this area is prohibited.
 // FE00	FE9F	Sprite attribute table (OAM)
 // FEA0	FEFF	Not Usable	Nintendo says use of this area is prohibited
-// FF00	FF7F	I/O Registers
+// FF00	FF7F	I/O registers
 // FF80	FFFE	High RAM (HRAM)
 // FFFF	FFFF	Interrupt Enable register (IE)
 

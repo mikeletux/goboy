@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"github.com/mikeletux/goboy/pkg/bus"
+	"github.com/mikeletux/goboy/pkg/log"
 	"github.com/mikeletux/goboy/pkg/misc"
 )
 
@@ -109,8 +110,9 @@ func getHighAndLowBytes(value uint16) (high, low byte) {
 }
 
 type CPU struct {
-	Registers *Registers
-	Bus       bus.DataBusInterface
+	registers *Registers
+	bus       bus.DataBusInterface
+	logger    log.Logger
 
 	// Current fetch
 	FetchedData          uint16
@@ -123,17 +125,18 @@ type CPU struct {
 	Stepping bool
 }
 
-func Init(bus bus.DataBusInterface) *CPU {
+func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
 	return &CPU{
-		Registers: &Registers{},
-		Bus:       bus,
+		registers: &Registers{},
+		bus:       bus,
+		logger:    log.NewBuiltinStdoutLogger(),
 	}
 }
 
 func (c *CPU) Step() bool {
 	if !c.Halted {
 		// Fetch instruction
-		c.CurrentOperationCode = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		c.CurrentOperationCode = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		instruction, ok := instructionsMap[c.CurrentOperationCode]
 		if !ok {
 			misc.NoImplemented(fmt.Sprintf("instruction %d doesn't exist", c.CurrentOperationCode),
@@ -161,21 +164,21 @@ func (c *CPU) fetchData() error {
 		return nil
 
 	case amR:
-		fetchedData, err := c.Registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
 		if err != nil {
 			return err
 		}
 		c.FetchedData = fetchedData
 
 	case amRnD8:
-		c.FetchedData = uint16(c.Bus.BusRead(c.Registers.GetPCAndIncrement()))
+		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
 		// emu_cycles(1)
 		return nil
 
 	case amD16:
-		var low = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		var low = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		// emu_cycles(1)
-		var high = c.Bus.BusRead(c.Registers.GetPCAndIncrement())
+		var high = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		// emu_cycles(1)
 		c.FetchedData = uint16(low) | uint16(high)<<8
 		return nil
