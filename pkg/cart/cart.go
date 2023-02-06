@@ -3,6 +3,7 @@ package cart
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/mikeletux/goboy/pkg/log"
 	"os"
 )
 
@@ -13,7 +14,7 @@ type CartridgeHeader struct {
 	NintendoLogo [48]byte
 	// Title contains ASCII representation of the upper case name of the game.
 	Title [16]byte
-	// ManufacturerCode in older cartridges was part of the title. The purpose of this si unknown.
+	// ManufacturerCode in older cartridges was part of the title. The purpose of this is unknown.
 	ManufacturerCode [4]byte
 	// CgbFlag in older cartridges was part of the title. It decides whether enable color mode.
 	CgbFlag byte
@@ -56,7 +57,7 @@ func (c *CartridgeHeader) GetReadableCartridgeType() string {
 }
 
 // GetReadableRomSize returns how much ROM is present in the cartridge in KiB
-func (c *CartridgeHeader) GetReadableRomSize() uint {
+func (c *CartridgeHeader) GetReadableRomSize() int {
 	return 32 * (1 << RomSize[c.RomSize])
 }
 
@@ -80,10 +81,11 @@ type CartridgeInterface interface {
 type Cartridge struct {
 	CartridgeHeader *CartridgeHeader
 	rawData         []byte
+	logger          log.Logger
 }
 
 // NewCartridge returns a pointer to Cartridge given a Rom path
-func NewCartridge(romPath string) (*Cartridge, error) {
+func NewCartridge(romPath string, logger log.Logger) (*Cartridge, error) {
 	romData, err := os.ReadFile(romPath)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading ROM cartridges - %v", err)
@@ -102,6 +104,7 @@ func NewCartridge(romPath string) (*Cartridge, error) {
 	return &Cartridge{
 		CartridgeHeader: parseCartridgeHeader(romData),
 		rawData:         romData,
+		logger:          logger,
 	}, nil
 }
 
@@ -134,4 +137,15 @@ func parseCartridgeHeader(cartridgeRawData []byte) *CartridgeHeader {
 	cartridgeHeader.HeaderCheckSum = cartridgeRawData[HeaderChecksumAddr]
 	copy(cartridgeHeader.GlobalChecksum[:], cartridgeRawData[GlobalChecksumAddrStart:GlobalChecksumAddrEnd+1])
 	return cartridgeHeader
+}
+
+func (c *Cartridge) LogCartridgeHeaderInfo() {
+	c.logger.Debugf("Cartridge information:\nTitle:%s\nLicensee:%s\nCartridge type:%s\nRom size:%d KiB\nRam size:%s KiB\nSGB flag:%t\n",
+		c.CartridgeHeader.GetReadableTitle(),
+		c.CartridgeHeader.GetReadableLicenseeCode(),
+		c.CartridgeHeader.GetReadableCartridgeType(),
+		c.CartridgeHeader.GetReadableRomSize(),
+		c.CartridgeHeader.GetReadableRamSize(),
+		c.CartridgeHeader.SGBFlag(),
+	)
 }
