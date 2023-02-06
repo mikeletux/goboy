@@ -26,14 +26,14 @@ func NewBuiltinStdoutLogger() *BuiltinLogger {
 }
 
 func (b *BuiltinLogger) Debug(args ...any) {
-	b.logger.Println(args)
+	b.logger.Println(args...)
 }
 func (b *BuiltinLogger) Debugf(format string, args ...any) {
-	b.logger.Printf(format, args)
+	b.logger.Printf(format, args...)
 }
 func (b *BuiltinLogger) Fatal(args ...any) {
-	b.logger.Fatalln(args)
+	b.logger.Fatalln(args...)
 }
 func (b *BuiltinLogger) Fatalf(format string, args ...any) {
-	b.logger.Fatalf(format, args)
+	b.logger.Fatalf(format, args...)
 }
