@@ -177,7 +177,17 @@ func (c *CPU) Step() bool {
 		}
 
 		// Execute instruction
-		// Show CPU registers after executing
+		execFunc, exist := execInstructionMap[instruction.Type]
+		if !exist { // Check if instruction has an entry on execInstructionMap.
+			c.logger.Fatalf("instruction %s doesn't exist in execInstructionMap", instruction.Mnemonic)
+		}
+
+		if execFunc == nil { // If nil means that the instruction has not been implemented yet.
+			c.logger.Fatalf("instruction %s has not been implemented yet", instruction.Mnemonic)
+		}
+
+		execFunc(c)
+		c.logRegisterValues()
 
 	}
 	return true // Check this
