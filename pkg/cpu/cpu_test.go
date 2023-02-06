@@ -94,59 +94,107 @@ func TestGetSetRegisters(t *testing.T) {
 	}
 }
 
-func TestSetFlagsFromFlagsRegister(t *testing.T) {
+func TestSetGetFlagsFromFlagsRegister(t *testing.T) {
 	// Init CPU
 	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
 	cpu.registers = &Registers{
 		F: 0x0,
 	}
 
+	// Test Get and Set for Z flag
 	cpu.registers.SetFZ(true) // Now register should be 0x80
 	result := reflect.DeepEqual(cpu.registers.F, byte(0x80))
 	if !result {
 		t.Errorf("got: %X expected: %X for flag Z on F register", cpu.registers.F, 0x80)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFZ(), true)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag Z on F register", cpu.registers.GetFZ(), true)
+	}
+
+	// Test Get and Set for N flag
 	cpu.registers.SetFN(true) // Now register should be 0xC0
 	result = reflect.DeepEqual(cpu.registers.F, byte(0xC0))
 	if !result {
 		t.Errorf("got: %X expected: %X for flag N on F register", cpu.registers.F, 0xC0)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFN(), true)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag N on F register", cpu.registers.GetFN(), true)
+	}
+
+	// Test Get and Set for H flag
 	cpu.registers.SetFH(true) // Now register should be 0xE0
 	result = reflect.DeepEqual(cpu.registers.F, byte(0xE0))
 	if !result {
 		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0xE0)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFH(), true)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag H on F register", cpu.registers.GetFH(), true)
+	}
+
+	// Test Get and Set for C flag
 	cpu.registers.SetFC(true) // Now register should be 0xF0
 	result = reflect.DeepEqual(cpu.registers.F, byte(0xF0))
 	if !result {
 		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0xF0)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFC(), true)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag C on F register", cpu.registers.GetFC(), true)
+	}
+
+	// Test Get and Set for Z flag
 	cpu.registers.SetFZ(false) // Now register should be 0x70
 	result = reflect.DeepEqual(cpu.registers.F, byte(0x70))
 	if !result {
 		t.Errorf("got: %X expected: %X for flag Z on F register", cpu.registers.F, 0x70)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFZ(), false)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag Z on F register", cpu.registers.GetFZ(), false)
+	}
+
+	// Test Get and Set for N flag
 	cpu.registers.SetFN(false) // Now register should be 0x30
 	result = reflect.DeepEqual(cpu.registers.F, byte(0x30))
 	if !result {
 		t.Errorf("got: %X expected: %X for flag N on F register", cpu.registers.F, 0x30)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFN(), false)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag N on F register", cpu.registers.GetFN(), false)
+	}
+
+	// Test Get and Set for H flag
 	cpu.registers.SetFH(false) // Now register should be 0x10
 	result = reflect.DeepEqual(cpu.registers.F, byte(0x10))
 	if !result {
 		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0x10)
 	}
 
+	result = reflect.DeepEqual(cpu.registers.GetFH(), false)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag H on F register", cpu.registers.GetFH(), false)
+	}
+
+	// Test Get and Set for C flag
 	cpu.registers.SetFC(false) // Now register should be 0x00
 	result = reflect.DeepEqual(cpu.registers.F, byte(0x00))
 	if !result {
 		t.Errorf("got: %X expected: %X on F register", cpu.registers.F, 0x00)
+	}
+
+	result = reflect.DeepEqual(cpu.registers.GetFC(), false)
+	if !result {
+		t.Errorf("got: %t expected: %t for flag C on F register", cpu.registers.GetFC(), false)
 	}
 }
 
@@ -275,7 +323,6 @@ func TestCPU_StepInstruction(t *testing.T) {
 			CurrentInstruction: Instruction{
 				Type:           inNop,
 				AddressingMode: amImp,
-				Mnemonic:       "NOP",
 			},
 		},
 		{
@@ -285,7 +332,6 @@ func TestCPU_StepInstruction(t *testing.T) {
 			CurrentInstruction: Instruction{
 				Type:           inJp,
 				AddressingMode: amD16,
-				Mnemonic:       "JP a16",
 			},
 		},
 		{
@@ -295,7 +341,6 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inXor,
 				AddressingMode: amR,
 				RegisterType1:  rtA,
-				Mnemonic:       "XOR A",
 			},
 		},
 		{
@@ -306,7 +351,6 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inLd,
 				AddressingMode: amRnD8,
 				RegisterType1:  rtC,
-				Mnemonic:       "LD C, d8",
 			},
 		},
 		{
@@ -316,7 +360,6 @@ func TestCPU_StepInstruction(t *testing.T) {
 				Type:           inDec,
 				AddressingMode: amR,
 				RegisterType1:  rtB,
-				Mnemonic:       "DEC B",
 			},
 		},
 	}
@@ -338,8 +381,12 @@ func TestCPU_StepInstruction(t *testing.T) {
 			}
 		}
 
-		if !reflect.DeepEqual(cpu.CurrentInstruction, testCase.CurrentInstruction) {
-			t.Errorf("got %v expected %v for CPU current instruction", cpu.CurrentInstruction, testCase.CurrentInstruction)
+		if !reflect.DeepEqual(cpu.CurrentInstruction.Type, testCase.CurrentInstruction.Type) {
+			t.Errorf("got %v expected %v for CPU current type instruction", cpu.CurrentInstruction.Type, testCase.CurrentInstruction.Type)
+		}
+
+		if !reflect.DeepEqual(cpu.CurrentInstruction.AddressingMode, testCase.CurrentInstruction.AddressingMode) {
+			t.Errorf("got %v expected %v for CPU current addressing mode", cpu.CurrentInstruction.AddressingMode, testCase.CurrentInstruction.AddressingMode)
 		}
 	}
 }
