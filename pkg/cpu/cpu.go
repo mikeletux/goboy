@@ -190,3 +190,8 @@ func (c *CPU) fetchData() error {
 
 	return nil
 }
+
+func (c *CPU) logRegisterValues() {
+	c.logger.Debugf("AF:%X BC:%X DE:%X HL%X",
+		c.registers.GetAF(), c.registers.GetBC(), c.registers.GetDE(), c.registers.GetHL())
+}
