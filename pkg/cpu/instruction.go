@@ -15,12 +15,15 @@ type Instruction struct {
 	Parameter byte
 	// Mnemonic is the human-readable instruction.
 	Mnemonic string
+	// execFunc is the function that will carry out the instruction changes in the CPU.
+	execFunc func(c *CPU)
 }
 
 var instructionsMap = map[byte]Instruction{
-	0x00: {Type: inNop, Mnemonic: "NOP"},                                                 // 0x00 NOP
-	0x05: {Type: inDec, AddressingMode: amR, RegisterType1: rtB, Mnemonic: "DEC B"},      // 0x05 DEC B
-	0x0E: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtC, Mnemonic: "LD C, d8"}, // 0x0E LD C, d8
-	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A"},      // 0xAF XOR A
-	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16"},                        // 0xC3 JP a16
+	0x00: {Type: inNop, Mnemonic: "NOP", execFunc: nopExecFunc},                                            // 0x00 NOP
+	0x05: {Type: inDec, AddressingMode: amR, RegisterType1: rtB, Mnemonic: "DEC B", execFunc: nil},         // 0x05 DEC B
+	0x0E: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtC, Mnemonic: "LD C, d8", execFunc: nil},    // 0x0E LD C, d8
+	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // 0xAF XOR A
+	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc},                    // 0xC3 JP a16
+	0xF3: {Type: inDi, Mnemonic: "DI", execFunc: diExecFunc},                                               // DI
 }
