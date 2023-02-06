@@ -1,6 +1,7 @@
 package cart
 
 import (
+	"github.com/mikeletux/goboy/pkg/log"
 	"github.com/mikeletux/goboy/pkg/test"
 	"reflect"
 	"strings"
@@ -14,7 +15,7 @@ const (
 )
 
 func TestCartridge(t *testing.T) {
-	cartridge, err := NewCartridge(testRomPath)
+	cartridge, err := NewCartridge(testRomPath, log.NewBuiltinStdoutLogger())
 	if err != nil {
 		t.Errorf("error while initiating cartridge - %s", err)
 	}
