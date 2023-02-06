@@ -3,6 +3,7 @@ package bus
 import (
 	"fmt"
 	"github.com/mikeletux/goboy/pkg/cart"
+	"github.com/mikeletux/goboy/pkg/log"
 	"github.com/mikeletux/goboy/pkg/misc"
 	"strconv"
 )
@@ -16,12 +17,14 @@ type DataBusInterface interface {
 type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
 	Cartridge cart.CartridgeInterface
+	logger    log.Logger
 }
 
 // NewBus initializes a bus given a type that implements the cart.CartridgeInterface interface
-func NewBus(cartridge cart.CartridgeInterface) *Bus {
+func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 	return &Bus{
 		Cartridge: cartridge,
+		logger:    logger,
 	}
 }
 
