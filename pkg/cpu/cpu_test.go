@@ -70,25 +70,29 @@ func TestGetSetRegisters(t *testing.T) {
 	cpu.registers.L = 0
 
 	// Test SetAF
-	cpu.registers.SetAF(AFTestData)
+	//cpu.registers.SetAF(AFTestData)
+	cpu.registers.SetDataToRegisters(rtAF, AFTestData)
 	if cpu.registers.A != ATestData || cpu.registers.F != FTestData {
 		t.Errorf("got: A:%d F:%d, expected A:%d F:%d", cpu.registers.A, cpu.registers.F, ATestData, FTestData)
 	}
 
 	// Test SetBC
-	cpu.registers.SetBC(BCTestData)
+	//cpu.registers.SetBC(BCTestData)
+	cpu.registers.SetDataToRegisters(rtBC, BCTestData)
 	if cpu.registers.B != BTestData || cpu.registers.C != CTestData {
 		t.Errorf("got: B:%d C:%d, expected B:%d C:%d", cpu.registers.B, cpu.registers.C, BTestData, CTestData)
 	}
 
 	// Test SetDE
-	cpu.registers.SetDE(DETestData)
+	//cpu.registers.SetDE(DETestData)
+	cpu.registers.SetDataToRegisters(rtDE, DETestData)
 	if cpu.registers.D != DTestData || cpu.registers.E != ETestData {
 		t.Errorf("got: D:%d E:%d, expected D:%d E:%d", cpu.registers.D, cpu.registers.E, DTestData, ETestData)
 	}
 
 	// Test SetHL
-	cpu.registers.SetHL(HLTestData)
+	// cpu.registers.SetHL(HLTestData)
+	cpu.registers.SetDataToRegisters(rtHL, HLTestData)
 	if cpu.registers.H != HTestData || cpu.registers.L != LTestData {
 		t.Errorf("got: H:%d L:%d, expected H:%d L:%d", cpu.registers.H, cpu.registers.L, HTestData, LTestData)
 	}
@@ -276,14 +280,14 @@ func TestFetchDataFromRegisters(t *testing.T) {
 }
 
 func initCPURegistersWithTestData(cpu *CPU) {
-	cpu.registers.A = ATestData
-	cpu.registers.F = FTestData
-	cpu.registers.B = BTestData
-	cpu.registers.C = CTestData
-	cpu.registers.D = DTestData
-	cpu.registers.E = ETestData
-	cpu.registers.H = HTestData
-	cpu.registers.L = LTestData
+	cpu.registers.SetDataToRegisters(rtA, uint16(ATestData))
+	cpu.registers.SetDataToRegisters(rtF, uint16(FTestData))
+	cpu.registers.SetDataToRegisters(rtB, uint16(BTestData))
+	cpu.registers.SetDataToRegisters(rtC, uint16(CTestData))
+	cpu.registers.SetDataToRegisters(rtD, uint16(DTestData))
+	cpu.registers.SetDataToRegisters(rtE, uint16(ETestData))
+	cpu.registers.SetDataToRegisters(rtH, uint16(HTestData))
+	cpu.registers.SetDataToRegisters(rtL, uint16(LTestData))
 }
 
 func TestGetPCAndIncrement(t *testing.T) {
