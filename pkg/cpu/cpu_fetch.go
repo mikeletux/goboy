@@ -151,14 +151,15 @@ func (c *CPU) fetchData() error {
 		c.FetchedData = fetchedData
 
 		var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
-		c.emulateCpuCycles(1)
 		c.DestinationIsMemory = true
+		c.emulateCpuCycles(1)
 		c.MemoryDestination = uint16(memoryAddress) | 0xFF00
 
 		return nil
 
-	case amHLnSPR:
-		// TBD
+	case amHLnSPR, amD8:
+		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
+		c.emulateCpuCycles(1)
 		return nil
 
 	case amD16, amRnD16:
@@ -171,31 +172,64 @@ func (c *CPU) fetchData() error {
 		c.FetchedData = uint16(low) | uint16(high)<<8
 		return nil
 
-	case amD8:
-		// TBD
-		return nil
+	case amD16nR, amA16nR:
+		var low = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
 
-	case amD16nR:
-		// TBD
+		var high = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
+
+		c.DestinationIsMemory = true
+		c.MemoryDestination = uint16(low) | uint16(high)<<8
+
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = fetchedData
 		return nil
 
 	case amMRnD8:
-		// TBD
+		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
+		c.emulateCpuCycles(1)
+
+		memoryDestination, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
+
+		c.DestinationIsMemory = true
+		c.MemoryDestination = memoryDestination
+
 		return nil
 
 	case amMR:
-		// TBD
-		return nil
+		memoryDestination, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
 
-	case amA16nR:
-		// TBD
+		c.DestinationIsMemory = true
+		c.MemoryDestination = memoryDestination
+
+		c.FetchedData = uint16(c.bus.BusRead(memoryDestination))
+
 		return nil
 
 	case amRnA16:
-		// TBD
-		return nil
+		var low = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
 
-	// To be done still
+		var high = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
+
+		memoryDestination := uint16(low) | uint16(high)<<8
+		c.FetchedData = uint16(c.bus.BusRead(memoryDestination))
+		c.emulateCpuCycles(1)
+
+		return nil
+		
 	default:
 		return fmt.Errorf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode)
 	}
