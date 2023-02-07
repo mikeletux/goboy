@@ -66,7 +66,7 @@ const (
 	amRnHLI
 	amRnHLD
 	amHLInR
-	amHLRnR
+	amHLDnR
 	amRnA8
 	amA8nR
 	amHLnSPR
