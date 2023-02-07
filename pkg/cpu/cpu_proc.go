@@ -42,3 +42,31 @@ func checkCondition(c *CPU) bool {
 func diExecFunc(c *CPU) {
 	c.EnableMasterInterruptions = false
 }
+
+func ldExecFunc(c *CPU) {
+	if c.DestinationIsMemory {
+		// We need to write in memory
+		if c.CurrentInstruction.RegisterType2 >= rtAF { // This means we need to write twice in memory.
+			c.bus.BusWrite16(c.MemoryDestination, c.FetchedData)
+		} else {
+			c.bus.BusWrite(c.MemoryDestination, byte(c.FetchedData))
+		}
+		return
+	}
+
+	if c.CurrentInstruction.AddressingMode == amHLnSPR {
+		c.registers.SetFZ(false)
+		c.registers.SetFN(false)
+		reg2Value, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			c.logger.Fatalf("error when executing LD HL SP(r) operation: %s", err)
+		}
+
+		c.registers.SetFH((reg2Value&0xF)+(c.FetchedData&0xF) >= 0x10)    // If lower 4 bits of result overflow, set H.
+		c.registers.SetFC((reg2Value&0xFF)+(c.FetchedData&0xFF) >= 0x100) // If upper 4 bits of result overflow, set C.
+
+		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, reg2Value+c.FetchedData)
+	}
+
+	c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, c.FetchedData) // Normal case.
+}
