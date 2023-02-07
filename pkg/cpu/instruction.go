@@ -20,10 +20,26 @@ type Instruction struct {
 }
 
 var instructionsMap = map[byte]Instruction{
-	0x00: {Type: inNop, Mnemonic: "NOP", execFunc: nopExecFunc},                                            // 0x00 NOP
-	0x05: {Type: inDec, AddressingMode: amR, RegisterType1: rtB, Mnemonic: "DEC B", execFunc: nil},         // 0x05 DEC B
-	0x0E: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtC, Mnemonic: "LD C, d8", execFunc: nil},    // 0x0E LD C, d8
+	// 0x0
+	0x00: {Type: inNop, Mnemonic: "NOP", execFunc: nopExecFunc},                                         // 0x00 NOP
+	0x05: {Type: inDec, AddressingMode: amR, RegisterType1: rtB, Mnemonic: "DEC B", execFunc: nil},      // 0x05 DEC B
+	0x0E: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtC, Mnemonic: "LD C, d8", execFunc: nil}, // 0x0E LD C, d8
+	// 0x1
+	// 0x2
+	// 0x3
+	// 0x4
+	// 0x5
+	// 0x6
+	// 0x7
+	// 0x8
+	// 0x9
+	// 0xA
 	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // 0xAF XOR A
-	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc},                    // 0xC3 JP a16
-	0xF3: {Type: inDi, Mnemonic: "DI", execFunc: diExecFunc},                                               // DI
+	// 0xB
+	// 0xC
+	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc}, // 0xC3 JP a16
+	// 0xD
+	// 0xE
+	// 0xF
+	0xF3: {Type: inDi, Mnemonic: "DI", execFunc: diExecFunc}, // DI
 }
