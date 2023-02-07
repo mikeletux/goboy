@@ -10,16 +10,33 @@ func (c *CPU) fetchData() error {
 	case amImp:
 		return nil
 
-	case amRnD16:
-		// TBD
-		return nil
-
 	case amRnR:
-		// TBD
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+		c.FetchedData = fetchedData
 		return nil
 
 	case amMRnR:
-		// TBD
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+		c.FetchedData = fetchedData
+
+		fetchedData, err = c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
+		c.MemoryDestination = fetchedData
+
+		c.DestinationIsMemory = true
+
+		if c.CurrentInstruction.RegisterType1 == rtC { // I don't understand this quite well
+			c.MemoryDestination |= 0xFF00
+		}
+
 		return nil
 
 	case amR:
@@ -36,27 +53,93 @@ func (c *CPU) fetchData() error {
 		return nil
 
 	case amRnMR:
-		// TBD
+		memoryAddress, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		if c.CurrentInstruction.RegisterType1 == rtC {
+			memoryAddress |= 0xFF00
+		}
+
+		c.FetchedData = uint16(c.bus.BusRead(memoryAddress))
+		c.emulateCpuCycles(1)
+
 		return nil
 
 	case amRnHLI:
-		// TBD
+		memoryAddress, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = uint16(c.bus.BusRead(memoryAddress))
+		c.emulateCpuCycles(1)
+		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType2, memoryAddress+1)
+
 		return nil
 
 	case amRnHLD:
-		// TBD
+		memoryAddress, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = uint16(c.bus.BusRead(memoryAddress))
+		c.emulateCpuCycles(1)
+		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType2, memoryAddress-1)
+
 		return nil
 
 	case amHLInR:
-		// TBD
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = fetchedData
+
+		memoryDestination, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
+		c.DestinationIsMemory = true
+		c.MemoryDestination = memoryDestination
+
+		err = c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, memoryDestination+1)
+		if err != nil {
+			return err
+		}
+
 		return nil
 
-	case amHLRnR:
-		// TBD
+	case amHLDnR:
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = fetchedData
+
+		memoryDestination, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+		if err != nil {
+			return err
+		}
+		c.DestinationIsMemory = true
+		c.MemoryDestination = memoryDestination
+
+		err = c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, memoryDestination-1)
+		if err != nil {
+			return err
+		}
+
 		return nil
 
 	case amRnA8:
-		// TBD
+		var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
+		c.FetchedData = uint16(c.bus.BusRead(uint16(memoryAddress)))
+		
 		return nil
 
 	case amA8nR:
@@ -67,7 +150,7 @@ func (c *CPU) fetchData() error {
 		// TBD
 		return nil
 
-	case amD16:
+	case amD16, amRnD16:
 		var low = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		c.emulateCpuCycles(1)
 
@@ -100,7 +183,7 @@ func (c *CPU) fetchData() error {
 	case amRnA16:
 		// TBD
 		return nil
-		
+
 	// To be done still
 	default:
 		return fmt.Errorf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode)
