@@ -1,16 +1,14 @@
 package bus
 
 import (
-	"fmt"
 	"github.com/mikeletux/goboy/pkg/cart"
 	"github.com/mikeletux/goboy/pkg/log"
-	"github.com/mikeletux/goboy/pkg/misc"
-	"strconv"
 )
 
 type DataBusInterface interface {
 	BusRead(address uint16) byte
 	BusWrite(address uint16, value byte)
+	BusWrite16(address uint16, value uint16)
 }
 
 // Bus represents the whole Gameboy bus
@@ -35,13 +33,12 @@ func (b *Bus) BusRead(address uint16) byte {
 	}
 
 	// NO IMPLEMENTED
-	misc.NoImplemented(fmt.Sprintf("this bus address is not implemented yet to read. Addr -> %s",
-		strconv.FormatInt(int64(address), 16)), -5)
+	b.logger.Fatalf("bus address 0x%X yet not implemented to read", address)
 
 	return 0
 }
 
-// BusWrite writes a value into bus given a bus memory area
+// BusWrite writes a byte into bus given a bus memory area.
 func (b *Bus) BusWrite(address uint16, value byte) {
 	if address <= RomBank01NNEnd {
 		b.Cartridge.CartWrite(address, value)
@@ -49,6 +46,8 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 	}
 
 	// NO IMPLEMENTED
-	misc.NoImplemented(fmt.Sprintf("this bus address is not implemented yet to write. Addr -> %s",
-		strconv.FormatInt(int64(address), 16)), -5)
+	b.logger.Fatalf("bus address 0x%X yet not implemented to write", address)
 }
+
+// BusWrite16 writes two bytes into bus given a bus memory area
+func (b *Bus) BusWrite16(address uint16, value uint16) {}
