@@ -150,6 +150,44 @@ func (r *Registers) FetchDataFromRegisters(registerType int) (uint16, error) {
 	return 0, fmt.Errorf("the processor register provided doesn't exist")
 }
 
+// SetDataToRegisters sets data to a register given its register constant.
+func (r *Registers) SetDataToRegisters(registerType int, data uint16) error {
+	switch registerType {
+	case rtA:
+		r.A = byte(0x00FF & data) // I think doing & 0x00FF is not needed but it makes clearer which part of the two bytes we want
+	case rtF:
+		r.F = byte(0x00FF & data)
+	case rtB:
+		r.B = byte(0x00FF & data)
+	case rtC:
+		r.C = byte(0x00FF & data)
+	case rtD:
+		r.D = byte(0x00FF & data)
+	case rtE:
+		r.E = byte(0x00FF & data)
+	case rtH:
+		r.H = byte(0x00FF & data)
+	case rtL:
+		r.L = byte(0x00FF & data)
+	case rtAF:
+		r.SetAF(data)
+	case rtBC:
+		r.SetBC(data)
+	case rtDE:
+		r.SetDE(data)
+	case rtHL:
+		r.SetHL(data)
+	case rtSP:
+		r.SP = data
+	case rtPC:
+		r.PC = data
+	default:
+		return fmt.Errorf("the processor register provided doesn't exist")
+	}
+
+	return nil
+}
+
 // GetPCAndIncrement returns the PC and increments it by 1
 func (r *Registers) GetPCAndIncrement() (pc uint16) {
 	pc = r.PC
