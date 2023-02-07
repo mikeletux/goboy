@@ -229,7 +229,7 @@ func (c *CPU) fetchData() error {
 		c.emulateCpuCycles(1)
 
 		return nil
-		
+
 	default:
 		return fmt.Errorf("addressing mode %d doesn't exist", c.CurrentInstruction.AddressingMode)
 	}
