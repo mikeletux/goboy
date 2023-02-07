@@ -139,11 +139,22 @@ func (c *CPU) fetchData() error {
 		var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		c.emulateCpuCycles(1)
 		c.FetchedData = uint16(c.bus.BusRead(uint16(memoryAddress)))
-		
+
 		return nil
 
 	case amA8nR:
-		// TBD
+		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+		if err != nil {
+			return err
+		}
+
+		c.FetchedData = fetchedData
+
+		var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
+		c.emulateCpuCycles(1)
+		c.DestinationIsMemory = true
+		c.MemoryDestination = uint16(memoryAddress) | 0xFF00
+
 		return nil
 
 	case amHLnSPR:
