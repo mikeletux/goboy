@@ -230,13 +230,14 @@ func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
 func (c *CPU) Step() bool {
 	if !c.Halted {
 		// Fetch instruction
+		instructionPC := c.registers.PC // used for debugging purposes
 		c.CurrentOperationCode = c.bus.BusRead(c.registers.GetPCAndIncrement())
 		instruction, ok := instructionsMap[c.CurrentOperationCode]
 		if !ok {
 			c.logger.Fatalf("instruction with code %X doesn't exist", c.CurrentOperationCode)
 		}
 		c.CurrentInstruction = instruction
-		c.logger.Debugf("instruction to be executed: %s", c.CurrentInstruction.Mnemonic)
+		c.logRegisterValues(instructionPC) // used for debugging purposes
 
 		// Fetch data
 		err := c.fetchData()
@@ -252,7 +253,6 @@ func (c *CPU) Step() bool {
 		}
 
 		execFunc(c)
-		c.logRegisterValues()
 
 	}
 	return true // Check this
@@ -262,7 +262,8 @@ func (c *CPU) emulateCpuCycles(numCycles int) { // TO BE IMPLEMENTED
 	return
 }
 
-func (c *CPU) logRegisterValues() {
-	c.logger.Debugf("[AF:%X] [BC:%X] [DE:%X] [HL:%X] [SP:%X] [PC:%X]",
-		c.registers.GetAF(), c.registers.GetBC(), c.registers.GetDE(), c.registers.GetHL(), c.registers.SP, c.registers.PC)
+func (c *CPU) logRegisterValues(instructionPC uint16) {
+	c.logger.Debugf("[PC:%X]:%X(%s) - [AF:%X] [BC:%X] [DE:%X] [HL:%X] [SP:%X]",
+		instructionPC, c.CurrentOperationCode, c.CurrentInstruction.Mnemonic, c.registers.GetAF(), c.registers.GetBC(),
+		c.registers.GetDE(), c.registers.GetHL(), c.registers.SP)
 }
