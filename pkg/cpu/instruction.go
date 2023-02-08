@@ -99,6 +99,22 @@ var instructionsMap = map[byte]Instruction{
 	0x6E: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtL, RegisterType2: rtHL, Mnemonic: "LD L,(HL)", execFunc: ldExecFunc}, // LD L,(HL)
 	0x6F: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtL, RegisterType2: rtA, Mnemonic: "LD L,A", execFunc: ldExecFunc},      // LD L,A
 	// 0x7
+	0x70: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtB, Mnemonic: "LD (HL),B", execFunc: ldExecFunc}, // LD (HL),B
+	0x71: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtC, Mnemonic: "LD (HL),C", execFunc: ldExecFunc}, // LD (HL),C
+	0x72: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtD, Mnemonic: "LD (HL),D", execFunc: ldExecFunc}, // LD (HL),D
+	0x73: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtE, Mnemonic: "LD (HL),E", execFunc: ldExecFunc}, // LD (HL),E
+	0x74: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtH, Mnemonic: "LD (HL),H", execFunc: ldExecFunc}, // LD (HL),H
+	0x75: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtL, Mnemonic: "LD (HL),L", execFunc: ldExecFunc}, // LD (HL),L
+	//	0x66:
+	0x77: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtHL, RegisterType2: rtA, Mnemonic: "LD (HL),A", execFunc: ldExecFunc}, // LD (HL),A
+	0x78: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "LD A,B", execFunc: ldExecFunc},      // LD A,B
+	0x79: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "LD A,C", execFunc: ldExecFunc},      // LD A,C
+	0x7A: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "LD A,D", execFunc: ldExecFunc},      // LD A,D
+	0x7B: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "LD A,E", execFunc: ldExecFunc},      // LD A,E
+	0x7C: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "LD A,H", execFunc: ldExecFunc},      // LD A,H
+	0x7D: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "LD A,L", execFunc: ldExecFunc},      // LD A,L
+	0x7E: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "LD A,(HL)", execFunc: ldExecFunc}, // LD A,(HL)
+	0x7F: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "LD A,A", execFunc: ldExecFunc},      // LD A,A
 	// 0x8
 	// 0x9
 	// 0xA
