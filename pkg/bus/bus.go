@@ -29,25 +29,83 @@ func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 
 // BusRead given an address it returns the value from that bus memory area.
 func (b *Bus) BusRead(address uint16) byte {
-	if address <= RomBank01NNEnd {
+	switch {
+	case address >= RomBank00Start && address <= RomBank01NNEnd: // Cartridge ROM area
 		return b.Cartridge.CartRead(address)
-	}
 
-	// NO IMPLEMENTED
-	b.logger.Fatalf("bus address 0x%X yet not implemented to read", address)
+	case address >= VramStart && address <= VramEnd: // VRAM area
+		// TO-DO
+		b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to read", address)
+
+	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
+		return b.Cartridge.CartRead(address)
+
+	case address >= WorkRam0Start && address <= WorkRam1End: // Working RAM area
+	// Working RAM
+
+	case address >= EchoRamStart && address <= EchoRamEnd: // Reserved echo RAM area
+		return 0x0
+
+	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
+		// TO-DO
+		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to read", address)
+
+	case address >= NintendoNotUsableMemoryStart && address <= NintendoNotUsableMemoryEnd: // Not usable area
+		return 0x0
+
+	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
+		// TO-DO
+		b.logger.Fatalf("IO Registers area bus address 0x%X yet not implemented to read", address)
+
+	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
+		// High RAM
+
+	case address == InterruptEnableRegister: // CPU enable register
+		// TO-DO
+		b.logger.Fatalf("Interrupt Enable Register area bus address 0x%X yet not implemented to read", address)
+
+	default:
+		b.logger.Fatalf("Unknown memory bus address 0x%X to read", address) // Code should never reach here
+	}
 
 	return 0
 }
 
 // BusWrite writes a byte into bus given a bus memory area.
 func (b *Bus) BusWrite(address uint16, value byte) {
-	if address <= RomBank01NNEnd {
+	switch {
+	case address >= RomBank00Start && address <= RomBank01NNEnd: // Cartridge ROM area
 		b.Cartridge.CartWrite(address, value)
-		return
+
+	case address >= VramStart && address <= VramEnd: // VRAM area
+		// TO-DO
+		b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to write", address)
+
+	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
+		b.Cartridge.CartWrite(address, value)
+
+	case address >= WorkRam0Start && address <= WorkRam1End: // Working RAM area
+	// Working RAM
+
+	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
+		// TO-DO
+		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to write", address)
+
+	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
+		// TO-DO
+		b.logger.Fatalf("IO Registers area bus address 0x%X yet not implemented to write", address)
+
+	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
+		// High RAM
+
+	case address == InterruptEnableRegister: // CPU enable register
+		// TO-DO
+		b.logger.Fatalf("Interrupt Enable Register area bus address 0x%X yet not implemented to write", address)
+
+	default:
+		b.logger.Fatalf("Unknown memory bus address 0x%X to write", address) // Code should never reach here
 	}
 
-	// NO IMPLEMENTED
-	b.logger.Fatalf("bus address 0x%X yet not implemented to write", address)
 }
 
 // BusRead16 given an address it returns the 16 bit value from that area.
