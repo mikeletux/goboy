@@ -30,6 +30,8 @@ const (
 	EchoRamEnd                    uint16 = 0xFDFF
 	OamStart                      uint16 = 0xFE00
 	OamEnd                        uint16 = 0xFE9F
+	NintendoNotUsableMemoryStart  uint16 = 0xFEA0
+	NintendoNotUsableMemoryEnd    uint16 = 0xFEFF
 	IORegistersStart              uint16 = 0xFF00
 	IORegistersEnd                uint16 = 0xFF7F
 	HighRamStart                  uint16 = 0xFF80
