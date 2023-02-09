@@ -11,4 +11,8 @@ worked by implementing a minimal viable emulator.
 - [Gameboy CPU (LR35902) instruction set](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 - ...
 
+## Roadmap
+- [] Fully implement CPU emulation  
+- TBD...   
+
 /Miguel Sama 2023
