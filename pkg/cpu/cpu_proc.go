@@ -13,11 +13,53 @@ func xorExecFunc(c *CPU) {
 	c.emulateCpuCycles(4)
 }
 
-func jpExecFunc(c *CPU) {
+func (c *CPU) gotoAddr(address uint16, pushPC bool) {
 	if checkCondition(c) {
-		c.registers.PC = c.FetchedData
+		if pushPC {
+			c.stackPush16(c.registers.PC)
+			c.emulateCpuCycles(2)
+		}
+		c.registers.PC = address
 		c.emulateCpuCycles(1)
 	}
+}
+
+func jpExecFunc(c *CPU) {
+	c.gotoAddr(c.FetchedData, false)
+}
+
+func callExecFunc(c *CPU) {
+	c.gotoAddr(c.FetchedData, true)
+}
+
+func jrExecFunc(c *CPU) {
+	rel := int8(c.FetchedData & 0xFF) // This byte must be signed
+	addr := c.registers.PC + uint16(rel)
+	c.gotoAddr(addr, false)
+}
+
+func popExecFunc(c *CPU) {
+	low := uint16(c.stackPop()) // Read the least significant byte
+	c.emulateCpuCycles(1)
+	high := uint16(c.stackPop()) // Read the most significant byte
+	c.emulateCpuCycles(1)
+	c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, high<<8|low)
+
+	if c.CurrentInstruction.RegisterType1 == rtAF {
+		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, (high<<8|low)&0xFFF0)
+	}
+}
+
+func pushExecFunc(c *CPU) {
+	value, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	c.stackPush(byte(value>>8) & 0xFF) // Push the most significant byte
+	c.emulateCpuCycles(1)
+	c.stackPush(byte(value) & 0xFF) // Push the least significant byte
+	c.emulateCpuCycles(1)
 }
 
 func checkCondition(c *CPU) bool {
