@@ -70,3 +70,13 @@ func ldExecFunc(c *CPU) {
 
 	c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, c.FetchedData) // Normal case.
 }
+
+func ldhExecFunc(c *CPU) {
+	if c.CurrentInstruction.RegisterType1 == rtA {
+		c.registers.A = c.bus.BusRead(0xFF00 | c.FetchedData)
+	} else {
+		c.bus.BusWrite(0xFF00|c.FetchedData, c.registers.A)
+	}
+
+	c.emulateCpuCycles(1)
+}
