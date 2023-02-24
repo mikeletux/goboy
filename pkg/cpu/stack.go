@@ -3,7 +3,6 @@ package cpu
 func (c *CPU) stackPush(value byte) {
 	c.registers.SP--
 	c.bus.BusWrite(c.registers.SP, value)
-	c.emulateCpuCycles(1)
 }
 func (c *CPU) stackPush16(value uint16) {
 	c.stackPush(byte(value >> 8 & 0xFF))
@@ -13,7 +12,6 @@ func (c *CPU) stackPush16(value uint16) {
 func (c *CPU) stackPop() byte {
 	value := c.bus.BusRead(c.registers.SP)
 	c.registers.SP++
-	c.emulateCpuCycles(1)
 	return value
 }
 func (c *CPU) stackPop16() uint16 {
