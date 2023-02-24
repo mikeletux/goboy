@@ -32,6 +32,27 @@ func callExecFunc(c *CPU) {
 	c.gotoAddr(c.FetchedData, true)
 }
 
+func retExecFunc(c *CPU) {
+	if c.CurrentInstruction.Condition != ctNone {
+		c.emulateCpuCycles(1)
+	}
+
+	if checkCondition(c) {
+		low := c.stackPop()
+		c.emulateCpuCycles(1)
+		high := c.stackPop()
+		c.emulateCpuCycles(1)
+
+		c.registers.PC = uint16(high<<8) | uint16(low)
+		c.emulateCpuCycles(1)
+	}
+}
+
+func retiExecFunc(c *CPU) {
+	c.EnableMasterInterruptions = true
+	retExecFunc(c)
+}
+
 func jrExecFunc(c *CPU) {
 	rel := int8(c.FetchedData & 0xFF) // This byte must be signed
 	addr := c.registers.PC + uint16(rel)

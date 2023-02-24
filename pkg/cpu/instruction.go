@@ -126,19 +126,25 @@ var instructionsMap = map[byte]Instruction{
 	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
 	// 0xB
 	// 0xC
+	0xC0: {Type: inRet, Mnemonic: "RET NZ", Condition: ctNZ, execFunc: retExecFunc},                               // RET NZ
 	0xC1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtBC, Mnemonic: "POP BC", execFunc: popExecFunc},    // POP BC
 	0xC2: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP NZ,a16", Condition: ctNZ, execFunc: jpExecFunc},       // JP NZ,a16
 	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc},                           // JP a16
 	0xC4: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL NZ,a16", Condition: ctNZ, execFunc: callExecFunc}, // CALL NZ,a16
 	0xC5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtBC, Mnemonic: "PUSH BC", execFunc: pushExecFunc}, // PUSH BC
+	0xC8: {Type: inRet, Mnemonic: "RET Z", Condition: ctZ, execFunc: retExecFunc},                                 // RET Z
+	0xC9: {Type: inRet, Mnemonic: "RET", Condition: ctNone, execFunc: retExecFunc},                                // RET
 	0xCA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP Z,a16", Condition: ctZ, execFunc: jpExecFunc},         // JP Z,a16
 	0xCC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL Z,a16", Condition: ctZ, execFunc: callExecFunc},   // CALL Z,a16
 	0xCD: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL a16", Condition: ctNone, execFunc: callExecFunc},  // CALL a16
 	// 0xD
+	0xD0: {Type: inRet, Mnemonic: "RET NC", Condition: ctNC, execFunc: retExecFunc},                               // RET NC
 	0xD1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtDE, Mnemonic: "POP DE", execFunc: popExecFunc},    // POP DE
 	0xD2: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP NC,a16", Condition: ctNC, execFunc: jpExecFunc},       // JP NC,a16
 	0xD4: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL NC,a16", Condition: ctNC, execFunc: callExecFunc}, // CALL NC,a16
 	0xD5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtDE, Mnemonic: "PUSH DE", execFunc: pushExecFunc}, // PUSH DE
+	0xD8: {Type: inRet, Mnemonic: "RET C", Condition: ctC, execFunc: retExecFunc},                                 // RET C
+	0xD9: {Type: inReti, Mnemonic: "RETI", execFunc: retiExecFunc},                                                // RETI
 	0xDA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP C,a16", Condition: ctC, execFunc: jpExecFunc},         // JP C,a16
 	0xDC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL C,a16", Condition: ctC, execFunc: callExecFunc},   // CALL C,a16
 	// 0xE
