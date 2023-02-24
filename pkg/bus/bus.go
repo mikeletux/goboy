@@ -10,13 +10,16 @@ type DataBusInterface interface {
 	BusWrite(address uint16, value byte)
 	BusRead16(address uint16) uint16
 	BusWrite16(address uint16, value uint16)
+	// Probably I need a method to return the ieRegister
 }
 
 // Bus represents the whole Gameboy bus
 type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
-	Cartridge cart.CartridgeInterface
-	logger    log.Logger
+	Cartridge  cart.CartridgeInterface
+	logger     log.Logger
+	ram        *Ram
+	ieRegister byte
 }
 
 // NewBus initializes a bus given a type that implements the cart.CartridgeInterface interface.
@@ -24,6 +27,7 @@ func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 	return &Bus{
 		Cartridge: cartridge,
 		logger:    logger,
+		ram:       NewRam(logger),
 	}
 }
 
@@ -41,7 +45,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return b.Cartridge.CartRead(address)
 
 	case address >= WorkRam0Start && address <= WorkRam1End: // Working RAM area
-	// Working RAM
+		return b.ram.readWorkingRam(address)
 
 	case address >= EchoRamStart && address <= EchoRamEnd: // Reserved echo RAM area
 		return 0x0
@@ -58,11 +62,10 @@ func (b *Bus) BusRead(address uint16) byte {
 		b.logger.Fatalf("IO Registers area bus address 0x%X yet not implemented to read", address)
 
 	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
-		// High RAM
+		b.ram.readHighRam(address)
 
 	case address == InterruptEnableRegister: // CPU enable register
-		// TO-DO
-		b.logger.Fatalf("Interrupt Enable Register area bus address 0x%X yet not implemented to read", address)
+		return b.ieRegister
 
 	default:
 		b.logger.Fatalf("Unknown memory bus address 0x%X to read", address) // Code should never reach here
@@ -85,7 +88,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 		b.Cartridge.CartWrite(address, value)
 
 	case address >= WorkRam0Start && address <= WorkRam1End: // Working RAM area
-	// Working RAM
+		b.ram.writeWorkingRam(address, value)
 
 	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
 		// TO-DO
@@ -93,14 +96,13 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 
 	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
 		// TO-DO
-		b.logger.Fatalf("IO Registers area bus address 0x%X yet not implemented to write", address)
+		b.logger.Debugf("IO Registers area bus address 0x%X yet not implemented to write", address)
 
 	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
-		// High RAM
+		b.ram.writeHighRam(address, value)
 
 	case address == InterruptEnableRegister: // CPU enable register
-		// TO-DO
-		b.logger.Fatalf("Interrupt Enable Register area bus address 0x%X yet not implemented to write", address)
+		b.ieRegister = value
 
 	default:
 		b.logger.Fatalf("Unknown memory bus address 0x%X to write", address) // Code should never reach here
