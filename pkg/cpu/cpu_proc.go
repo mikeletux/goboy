@@ -43,7 +43,7 @@ func retExecFunc(c *CPU) {
 		high := c.stackPop()
 		c.emulateCpuCycles(1)
 
-		c.registers.PC = uint16(high<<8) | uint16(low)
+		c.registers.PC = uint16(high)<<8 | uint16(low)
 		c.emulateCpuCycles(1)
 	}
 }
