@@ -32,6 +32,10 @@ func callExecFunc(c *CPU) {
 	c.gotoAddr(c.FetchedData, true)
 }
 
+func rstExecFunc(c *CPU) {
+	c.gotoAddr(uint16(c.CurrentInstruction.Parameter)&0xFF, true)
+}
+
 func retExecFunc(c *CPU) {
 	if c.CurrentInstruction.Condition != ctNone {
 		c.emulateCpuCycles(1)

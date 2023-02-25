@@ -132,35 +132,43 @@ var instructionsMap = map[byte]Instruction{
 	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc},                           // JP a16
 	0xC4: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL NZ,a16", Condition: ctNZ, execFunc: callExecFunc}, // CALL NZ,a16
 	0xC5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtBC, Mnemonic: "PUSH BC", execFunc: pushExecFunc}, // PUSH BC
+	0xC7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 00H", Parameter: 0x0, execFunc: rstExecFunc},        // RST 00H
 	0xC8: {Type: inRet, Mnemonic: "RET Z", Condition: ctZ, execFunc: retExecFunc},                                 // RET Z
 	0xC9: {Type: inRet, Mnemonic: "RET", Condition: ctNone, execFunc: retExecFunc},                                // RET
 	0xCA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP Z,a16", Condition: ctZ, execFunc: jpExecFunc},         // JP Z,a16
 	0xCC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL Z,a16", Condition: ctZ, execFunc: callExecFunc},   // CALL Z,a16
 	0xCD: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL a16", Condition: ctNone, execFunc: callExecFunc},  // CALL a16
+	0xCF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 08H", Parameter: 0x08, execFunc: rstExecFunc},       // RST 08H
 	// 0xD
 	0xD0: {Type: inRet, Mnemonic: "RET NC", Condition: ctNC, execFunc: retExecFunc},                               // RET NC
 	0xD1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtDE, Mnemonic: "POP DE", execFunc: popExecFunc},    // POP DE
 	0xD2: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP NC,a16", Condition: ctNC, execFunc: jpExecFunc},       // JP NC,a16
 	0xD4: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL NC,a16", Condition: ctNC, execFunc: callExecFunc}, // CALL NC,a16
 	0xD5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtDE, Mnemonic: "PUSH DE", execFunc: pushExecFunc}, // PUSH DE
+	0xD7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 10H", Parameter: 0x10, execFunc: rstExecFunc},       // RST 10H
 	0xD8: {Type: inRet, Mnemonic: "RET C", Condition: ctC, execFunc: retExecFunc},                                 // RET C
 	0xD9: {Type: inReti, Mnemonic: "RETI", execFunc: retiExecFunc},                                                // RETI
 	0xDA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP C,a16", Condition: ctC, execFunc: jpExecFunc},         // JP C,a16
 	0xDC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL C,a16", Condition: ctC, execFunc: callExecFunc},   // CALL C,a16
+	0xDF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 18H", Parameter: 0x18, execFunc: rstExecFunc},       // RST 18H
 	// 0xE
 	0xE0: {Type: inLdh, AddressingMode: amA8nR, RegisterType2: rtA, Mnemonic: "LDH (a8),A", execFunc: ldhExecFunc},                 // LDH (a8),A
 	0xE1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtHL, Mnemonic: "POP HL", execFunc: popExecFunc},                     // POP HL
 	0xE2: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtC, RegisterType2: rtA, Mnemonic: "LD (C),A", execFunc: ldExecFunc}, // LD (C),A
 	0xE5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtHL, Mnemonic: "PUSH HL", execFunc: pushExecFunc},                  // PUSH HL
+	0xE7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 20H", Parameter: 0x20, execFunc: rstExecFunc},                        // RST 20H
 	0xE9: {Type: inJp, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},    // JP (HL)
 	0xEA: {Type: inLd, AddressingMode: amA16nR, RegisterType2: rtA, Mnemonic: "LD (a16),A", execFunc: ldExecFunc},                  // LD (a16),A
+	0xEF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 28H", Parameter: 0x28, execFunc: rstExecFunc},                        // RST 28H
 	// 0xF
 	0xF0: {Type: inLdh, AddressingMode: amRnA8, RegisterType1: rtA, Mnemonic: "LDH A,(a8)", execFunc: ldhExecFunc},                 // LDH A,(a8)
 	0xF1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtAF, Mnemonic: "POP AF", execFunc: popExecFunc},                     // POP AF
 	0xF2: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "LD A,(C)", execFunc: ldExecFunc}, // LD A,(C)
 	0xF3: {Type: inDi, Mnemonic: "DI", execFunc: diExecFunc},                                                                       // DI
 	0xF5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtAF, Mnemonic: "PUSH AF", execFunc: pushExecFunc},                  // PUSH AF
+	0xF7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 30H", Parameter: 0x30, execFunc: rstExecFunc},                        // RST 30H
 	// 0xF8: {Type: inLd, AddressingMode: amHLnSPR, Mnemonic: "LD HL,SP+r8", execFunc: ldExecFunc},                                     // LD HL,SP+r8
 	0xF9: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtSP, RegisterType2: rtHL, Mnemonic: "LD SP,HL", execFunc: ldExecFunc}, // LD SP,HL
 	0xFA: {Type: inLd, AddressingMode: amRnA16, RegisterType1: rtA, Mnemonic: "LD A,(a16)", execFunc: ldExecFunc},                   // LD A,(a16)
+	0xFF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 38H", Parameter: 0x38, execFunc: rstExecFunc},                         // RST 38H
 }
