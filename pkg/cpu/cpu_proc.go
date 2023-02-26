@@ -148,9 +148,34 @@ func incExecFunc(c *CPU) {
 	c.registers.SetFZ(value == 0)
 	c.registers.SetFN(false)
 	c.registers.SetFH(value&0x0F == 0)
-
 }
 
 func decExecFunc(c *CPU) {
-	// TBD
+	value, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	value-- // Decrement is done here
+	if is16BitRegister(c.CurrentInstruction.RegisterType1) {
+		c.emulateCpuCycles(1)
+	}
+
+	if c.CurrentInstruction.RegisterType1 == rtHL && c.DestinationIsMemory {
+		value = c.FetchedData - 1
+		c.bus.BusWrite(c.registers.GetHL(), byte(value))
+	} else {
+		err = c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, value)
+		if err != nil {
+			c.logger.Fatal(err)
+		}
+	}
+
+	if (c.CurrentOperationCode & 0x0B) == 0x0B { // 0xXB DEC instruction doesn't change flags
+		return
+	}
+
+	c.registers.SetFZ(value == 0)
+	c.registers.SetFN(true)
+	c.registers.SetFH(value&0x0F == 0x0F)
 }
