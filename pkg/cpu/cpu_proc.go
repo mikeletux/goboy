@@ -13,17 +13,6 @@ func xorExecFunc(c *CPU) {
 	c.emulateCpuCycles(4)
 }
 
-func (c *CPU) gotoAddr(address uint16, pushPC bool) {
-	if checkCondition(c) {
-		if pushPC {
-			c.stackPush16(c.registers.PC)
-			c.emulateCpuCycles(2)
-		}
-		c.registers.PC = address
-		c.emulateCpuCycles(1)
-	}
-}
-
 func jpExecFunc(c *CPU) {
 	c.gotoAddr(c.FetchedData, false)
 }
@@ -87,25 +76,6 @@ func pushExecFunc(c *CPU) {
 	c.emulateCpuCycles(1)
 }
 
-func checkCondition(c *CPU) bool {
-	fz := c.registers.GetFZ()
-	fc := c.registers.GetFC()
-
-	switch c.CurrentInstruction.Condition {
-	case ctNone:
-		return true
-	case ctZ:
-		return fz
-	case ctNZ:
-		return !fz
-	case ctC:
-		return fc
-	case ctNC:
-		return !fc
-	}
-	return true // This never should be reached
-}
-
 func diExecFunc(c *CPU) {
 	c.EnableMasterInterruptions = false
 }
@@ -113,7 +83,7 @@ func diExecFunc(c *CPU) {
 func ldExecFunc(c *CPU) {
 	if c.DestinationIsMemory {
 		// We need to write in memory
-		if c.CurrentInstruction.RegisterType2 >= rtAF { // This means we need to write twice in memory.
+		if is16BitRegister(c.CurrentInstruction.RegisterType2) { // This means we need to write twice in memory.
 			c.bus.BusWrite16(c.MemoryDestination, c.FetchedData)
 		} else {
 			c.bus.BusWrite(c.MemoryDestination, byte(c.FetchedData))
@@ -146,4 +116,41 @@ func ldhExecFunc(c *CPU) {
 	}
 
 	c.emulateCpuCycles(1)
+}
+
+func incExecFunc(c *CPU) {
+	value, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	value++ // Increment is done here
+	if is16BitRegister(c.CurrentInstruction.RegisterType1) {
+		c.emulateCpuCycles(1)
+	}
+
+	if c.CurrentInstruction.RegisterType1 == rtHL && c.DestinationIsMemory {
+		value = c.FetchedData + 1
+		value &= 0xFF
+		c.bus.BusWrite(c.registers.GetHL(), byte(value))
+	} else {
+		err = c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, value)
+		value &= 0xFF
+		if err != nil {
+			c.logger.Fatal(err)
+		}
+	}
+
+	if (c.CurrentOperationCode & 0x03) == 0x03 { // 0xX3 INC instruction doesn't change flags
+		return
+	}
+
+	c.registers.SetFZ(value == 0)
+	c.registers.SetFN(false)
+	c.registers.SetFH(value&0x0F == 0)
+
+}
+
+func decExecFunc(c *CPU) {
+	// TBD
 }
