@@ -12,7 +12,7 @@ worked by implementing a minimal viable emulator.
 - ...
 
 ## Roadmap
-- [] Fully implement CPU emulation  
+- [ ] Fully implement CPU emulation and testing. 
 - TBD...   
 
 /Miguel Sama 2023
