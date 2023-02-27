@@ -179,3 +179,47 @@ func decExecFunc(c *CPU) {
 	c.registers.SetFN(true)
 	c.registers.SetFH(value&0x0F == 0x0F)
 }
+
+func addExecFunc(c *CPU) {
+	var value uint32
+	regValue, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType1)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	value = uint32(regValue + c.FetchedData)
+
+	if is16BitRegister(c.CurrentInstruction.RegisterType1) {
+		c.emulateCpuCycles(1)
+	}
+
+	if c.CurrentInstruction.RegisterType1 == rtSP {
+		r := int8(c.FetchedData & 0xFF) // r is a signed 8 bit integer
+		value = uint32(regValue + uint16(r))
+	}
+
+	var flagZ, flagH, flagC bool
+	if !is16BitRegister(c.CurrentInstruction.RegisterType1) { // for 8 bit instructions
+		flagZ = value&0xFF == 0
+		flagH = (regValue&0xF)+(c.FetchedData&0xF) >= 0x10
+		flagC = (regValue&0xFF)+(c.FetchedData&0xFF) >= 0x100
+	} else { // For 16 bit instructions
+		if c.CurrentInstruction.RegisterType1 != rtSP { // If not special case
+			flagZ = c.registers.GetFZ()
+			flagH = (regValue&0xFFF)+(c.FetchedData&0xFFF) >= 0x1000
+			flagC = uint32(regValue)+uint32(c.FetchedData) >= 0x10000
+		} else { // If special case SP
+			flagZ = false
+			flagH = (regValue&0xF)+(c.FetchedData&0xF) >= 0x10
+			flagC = (regValue&0xFF)+(c.FetchedData&0xFF) >= 0x100
+		}
+	}
+
+	c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, uint16(value&0xFFFF))
+	c.registers.SetFZ(flagZ)
+	c.registers.SetFN(false)
+	c.registers.SetFH(flagH)
+	c.registers.SetFC(flagC)
+}
+
+func adcExecFunc(c *CPU) {}
