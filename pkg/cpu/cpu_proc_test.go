@@ -1,23 +1,31 @@
 package cpu
 
 import (
+	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/log"
 	"testing"
 )
 
 const(
-	jpAddress = 0xFEA // Why this address? Because it means ugly is spanish :)
+	// Constants regarding TestJpExecFunc
+	jpAddress uint16 = 0xFEA // Why this address? Because it means ugly is spanish :)
+
+	// Constants regarding TestCallExecFunc
+	callDummyAddress uint16 = 0x2AE
+	initPCAddress uint16 = 0x150
+	stackPointerInitPosition uint16 = 0xDFFF
 )
 
 // TestJpExecFunc tests JP
 func TestJpExecFunc(t *testing.T) {
-	cpu := Init(&BusMapMock{}, &log.NilLogger{})
+	cpu := Init(nil, &log.NilLogger{}) // Bus can be Nil since it's not being used for JP
+
 	tests := []struct{
 		testName string
 		addressToJump uint16 // This is the mock address to jump if condition is satisfied
 		condition int // This is the mock condition from JP instruction
 		Z,C bool // These are the CPU registers
-		shouldJump bool // This indicates if the JP instruction should execute or not
+		shouldJump bool // This indicates if the JP instruction should jump or not
 	}{
 		{
 			testName: "1 - Test JP a16 and JP (HL)",
@@ -101,7 +109,121 @@ func TestJpExecFunc(t *testing.T) {
 }
 
 // TestCallExecFunc tests CALL
-func TestCallExecFunc(t *testing.T) {}
+func TestCallExecFunc(t *testing.T) {
+	cpu := Init(bus.NewMapMock(), &log.NilLogger{})
+
+	tests := []struct{
+		testName string
+		addressToCall uint16 // This is the mock address to call if condition is satisfied
+		condition int // This is the mock condition from CALL instruction
+		Z,C bool // These are the CPU registers
+		shouldJump bool // This indicates if the CALL instruction should execute or not
+	}{
+		{
+			testName: "1 - Test CALL NZ,a16 with Z=0",
+			addressToCall: callDummyAddress,
+			condition: ctNZ,
+			shouldJump: true,
+		},
+		{
+			testName: "2 - Test CALL NZ,a16 with Z=1",
+			addressToCall: callDummyAddress,
+			condition: ctNZ,
+			Z: true,
+			shouldJump: false,
+		},
+		{
+			testName: "3 - Test CALL NC,a16 with C=0",
+			addressToCall: callDummyAddress,
+			condition: ctNC,
+			shouldJump: true,
+		},
+		{
+			testName: "4 - Test CALL NC,a16 with C=1",
+			addressToCall: callDummyAddress,
+			condition: ctNC,
+			C: true,
+			shouldJump: false,
+		},
+		{
+			testName: "5 - Test CALL Z,a16 with Z=0",
+			addressToCall: callDummyAddress,
+			condition: ctZ,
+			shouldJump: false,
+		},
+		{
+			testName: "6 - Test CALL Z,a16 with Z=1",
+			addressToCall: callDummyAddress,
+			condition: ctZ,
+			Z: true,
+			shouldJump: true,
+		},
+		{
+			testName: "7 - Test CALL C,a16 with C=0",
+			addressToCall: callDummyAddress,
+			condition: ctC,
+			shouldJump: false,
+		},
+		{
+			testName: "8 - Test CALL C,a16 with C=1",
+			addressToCall: callDummyAddress,
+			condition: ctC,
+			C: true,
+			shouldJump: true,
+		},
+		{
+			testName: "9 - Test CALL a16 without condition",
+			addressToCall: callDummyAddress,
+			condition: ctNone,
+			shouldJump: true,
+		},
+	}
+
+	for _, test := range tests {
+		cpu.CurrentInstruction = Instruction{Condition: test.condition}
+		cpu.FetchedData = test.addressToCall
+		cpu.registers.PC = initPCAddress
+		cpu.registers.SP = stackPointerInitPosition
+		cpu.registers.SetFZ(test.Z)
+		cpu.registers.SetFC(test.C)
+
+		callExecFunc(cpu)
+
+		if test.shouldJump  {
+			if cpu.registers.PC != callDummyAddress { // Check that PC has jump to where it should
+				t.Errorf("[%s] The program counter should have jumped to %X and it is %X",
+					test.testName, callDummyAddress, cpu.registers.PC)
+			}
+
+			if cpu.registers.SP != stackPointerInitPosition - 2 { // Check that SP has decreased by 2 bytes
+				t.Errorf("[%s] SP should be %d and it is %d",
+					test.testName, stackPointerInitPosition - 2, cpu.registers.SP)
+			}
+
+			low := cpu.bus.BusRead(cpu.registers.SP)
+			high := cpu.bus.BusRead(cpu.registers.SP + 1)
+
+			if initPCAddress != uint16(high)<<8 | uint16(low) { // Check that written PC in the stack is the one prior CALL
+				t.Errorf("[%s] The PC addr recovered from stack %X does not match with the init one %X",
+					test.testName, uint16(high)<<8 | uint16(low), initPCAddress)
+			}
+		}
+
+		if !test.shouldJump {
+			if cpu.registers.PC != initPCAddress { // Check that PC has not moved
+				t.Errorf("[%s] The program counter shouldn't have from %X and it is %X",
+					test.testName, initPCAddress, cpu.registers.PC)
+			}
+
+			if cpu.registers.SP != stackPointerInitPosition { // Check that SP is the same prior the call
+				t.Errorf("[%s] SP shouldn't have moved from %X and it is %X",
+					test.testName, stackPointerInitPosition, cpu.registers.SP)
+			}
+
+		}
+	}
+
+}
 
 // TestRstExecFunc tests RST
 func TestRstExecFunc(t *testing.T) {}
