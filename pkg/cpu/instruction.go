@@ -156,6 +156,14 @@ var instructionsMap = map[byte]Instruction{
 	0x85: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "ADD A,L", execFunc: addExecFunc}, // ADD A,L
 	0x86: {Type: inAdd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "ADD A,(HL)", execFunc: addExecFunc}, // ADD A,(HL)
 	0x87: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "ADD A,A", execFunc: addExecFunc}, // ADD A,A
+	0x88: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "ADC A,B", execFunc: adcExecFunc}, // ADC A,B
+	0x89: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "ADC A,C", execFunc: adcExecFunc}, // ADC A,C
+	0x8A: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "ADC A,D", execFunc: adcExecFunc}, // ADC A,D
+	0x8B: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "ADC A,E", execFunc: adcExecFunc}, // ADC A,E
+	0x8C: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "ADC A,H", execFunc: adcExecFunc}, // ADC A,H
+	0x8D: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "ADC A,L", execFunc: adcExecFunc}, // ADC A,L
+	0x8E: {Type: inAdc, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "ADC A,(HL)", execFunc: adcExecFunc}, // ADC A,(HL)
+	0x8F: {Type: inAdc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "ADC A,A", execFunc: adcExecFunc}, // ADC A,A
 	// 0x9
 	// 0xA
 	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
@@ -174,6 +182,7 @@ var instructionsMap = map[byte]Instruction{
 	0xCA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP Z,a16", Condition: ctZ, execFunc: jpExecFunc},         // JP Z,a16
 	0xCC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL Z,a16", Condition: ctZ, execFunc: callExecFunc},   // CALL Z,a16
 	0xCD: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL a16", Condition: ctNone, execFunc: callExecFunc},  // CALL a16
+	0xCE: {Type: inAdc, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "ADC A,d8", execFunc: adcExecFunc}, // ADC A,d8
 	0xCF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 08H", Parameter: 0x08, execFunc: rstExecFunc},       // RST 08H
 	// 0xD
 	0xD0: {Type: inRet, Mnemonic: "RET NC", Condition: ctNC, execFunc: retExecFunc},                               // RET NC
