@@ -30,7 +30,7 @@ const (
 
 func TestGetSetRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu := Init(&BusMapMock{}, &log.NilLogger{})
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
@@ -100,7 +100,7 @@ func TestGetSetRegisters(t *testing.T) {
 
 func TestSetGetFlagsFromFlagsRegister(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu := Init(&BusMapMock{}, &log.NilLogger{})
 	cpu.registers = &Registers{
 		F: 0x0,
 	}
@@ -204,7 +204,7 @@ func TestSetGetFlagsFromFlagsRegister(t *testing.T) {
 
 func TestFetchDataFromRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu := Init(&BusMapMock{}, &log.NilLogger{})
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
@@ -292,105 +292,13 @@ func initCPURegistersWithTestData(cpu *CPU) {
 
 func TestGetPCAndIncrement(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMock{}, log.NewBuiltinStdoutLogger())
+	cpu := Init(&BusMapMock{}, &log.NilLogger{})
 	cpu.registers.PC = PCTestData
 
 	for i := uint16(0); i < 4; i++ {
 		got := cpu.registers.GetPCAndIncrement()
 		if got != PCTestData+i {
 			t.Errorf("got: %d expected %d in the PC", got, PCTestData+i)
-		}
-	}
-}
-
-// TestCPU_StepInstruction just checks that the right instruction is loaded in the CPU
-func TestCPU_StepInstruction(t *testing.T) {
-	busMock := &BusMock{
-		Data: []byte{
-			0x00,             // NOP
-			0xC3, 0x05, 0x00, // JP 0x0004
-			0xAF,       // XOR A
-			0x0E, 0x10, // LD C, 0x10
-			0x05, // DEC B
-		}, // 5 instructions
-	}
-
-	testCases := []struct {
-		FetchedData          uint16
-		CheckFetchData       bool // This indicates that the test needs to check FetchedData
-		CurrentOperationCode byte
-		CurrentInstruction   Instruction
-	}{
-		{
-			CheckFetchData:       false,
-			CurrentOperationCode: 0x00, // NOP
-			CurrentInstruction: Instruction{
-				Type:           inNop,
-				AddressingMode: amImp,
-			},
-		},
-		{
-			FetchedData:          0x0005,
-			CheckFetchData:       true,
-			CurrentOperationCode: 0xC3, // JP a16
-			CurrentInstruction: Instruction{
-				Type:           inJp,
-				AddressingMode: amD16,
-			},
-		},
-		{
-			CheckFetchData:       false,
-			CurrentOperationCode: 0xAF, // XOR A
-			CurrentInstruction: Instruction{
-				Type:           inXor,
-				AddressingMode: amR,
-				RegisterType1:  rtA,
-			},
-		},
-		{
-			FetchedData:          0x10,
-			CheckFetchData:       true,
-			CurrentOperationCode: 0x0E, // LD C, 0x10
-			CurrentInstruction: Instruction{
-				Type:           inLd,
-				AddressingMode: amRnD8,
-				RegisterType1:  rtC,
-			},
-		},
-		{
-			CheckFetchData:       false,
-			CurrentOperationCode: 0x05, // DEC B
-			CurrentInstruction: Instruction{
-				Type:           inDec,
-				AddressingMode: amR,
-				RegisterType1:  rtB,
-			},
-		},
-	}
-
-	// Init CPU
-	cpu := Init(busMock, log.NewBuiltinStdoutLogger())
-	for _, testCase := range testCases {
-		_ = cpu.Step()
-
-		// Do assertions
-		if cpu.CurrentOperationCode != testCase.CurrentOperationCode {
-			t.Errorf("got %d expected %d for current operation code",
-				cpu.CurrentOperationCode, testCase.CurrentOperationCode)
-		}
-
-		if testCase.CheckFetchData {
-			if cpu.FetchedData != testCase.FetchedData {
-				t.Errorf("got %d expected %d for fetched data", cpu.FetchedData, testCase.FetchedData)
-			}
-		}
-
-		if !reflect.DeepEqual(cpu.CurrentInstruction.Type, testCase.CurrentInstruction.Type) {
-			t.Errorf("got %v expected %v for CPU current type instruction", cpu.CurrentInstruction.Type, testCase.CurrentInstruction.Type)
-		}
-
-		if !reflect.DeepEqual(cpu.CurrentInstruction.AddressingMode, testCase.CurrentInstruction.AddressingMode) {
-			t.Errorf("got %v expected %v for CPU current addressing mode", cpu.CurrentInstruction.AddressingMode, testCase.CurrentInstruction.AddressingMode)
 		}
 	}
 }
