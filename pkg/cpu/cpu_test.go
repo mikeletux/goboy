@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/log"
 	"reflect"
 	"testing"
@@ -30,7 +31,7 @@ const (
 
 func TestGetSetRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMapMock{}, &log.NilLogger{})
+	cpu := Init(&bus.MapMock{}, &log.NilLogger{})
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
@@ -100,7 +101,7 @@ func TestGetSetRegisters(t *testing.T) {
 
 func TestSetGetFlagsFromFlagsRegister(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMapMock{}, &log.NilLogger{})
+	cpu := Init(nil, &log.NilLogger{}) // bus is set to nil because it is not used for this test
 	cpu.registers = &Registers{
 		F: 0x0,
 	}
@@ -204,7 +205,7 @@ func TestSetGetFlagsFromFlagsRegister(t *testing.T) {
 
 func TestFetchDataFromRegisters(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMapMock{}, &log.NilLogger{})
+	cpu := Init(nil, &log.NilLogger{}) // bus is set to nil because it is not used for this test
 
 	// Set registers with some data for testing Getters
 	initCPURegistersWithTestData(cpu)
@@ -292,7 +293,7 @@ func initCPURegistersWithTestData(cpu *CPU) {
 
 func TestGetPCAndIncrement(t *testing.T) {
 	// Init CPU
-	cpu := Init(&BusMapMock{}, &log.NilLogger{})
+	cpu := Init(nil, &log.NilLogger{}) // bus is set to nil because it is not used for this test
 	cpu.registers.PC = PCTestData
 
 	for i := uint16(0); i < 4; i++ {
