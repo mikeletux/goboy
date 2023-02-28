@@ -182,6 +182,14 @@ var instructionsMap = map[byte]Instruction{
 	0x9E: {Type: inSbc, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "SBC A,(HL)", execFunc: sbcExecFunc}, // ADC A,(HL)
 	0x9F: {Type: inSbc, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "SBC A,A", execFunc: sbcExecFunc}, // ADC A,A
 	// 0xA
+	0xA0: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "AND B", execFunc: andExecFunc}, // AND B
+	0xA1: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "AND C", execFunc: andExecFunc}, // AND C
+	0xA2: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "AND D", execFunc: andExecFunc}, // AND D
+	0xA3: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "AND E", execFunc: andExecFunc}, // AND E
+	0xA4: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "AND H", execFunc: andExecFunc}, // AND H
+	0xA5: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "AND L", execFunc: andExecFunc}, // AND L
+	0xA6: {Type: inAnd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "AND (HL)", execFunc: andExecFunc}, // AND (HL)
+	0xA7: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "AND A", execFunc: andExecFunc}, // AND A
 	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
 	// 0xB
 	// 0xC
@@ -219,6 +227,7 @@ var instructionsMap = map[byte]Instruction{
 	0xE1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtHL, Mnemonic: "POP HL", execFunc: popExecFunc},                     // POP HL
 	0xE2: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtC, RegisterType2: rtA, Mnemonic: "LD (C),A", execFunc: ldExecFunc}, // LD (C),A
 	0xE5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtHL, Mnemonic: "PUSH HL", execFunc: pushExecFunc},                  // PUSH HL
+	0xE6: {Type: inAnd, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "AND d8", execFunc: andExecFunc},                     // AND d8
 	0xE7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 20H", Parameter: 0x20, execFunc: rstExecFunc},                        // RST 20H
 	0xE8: {Type: inAdd, AddressingMode: amRnD8, RegisterType1: rtSP, Mnemonic: "ADD SP,r8", execFunc: addExecFunc},                 // ADD SP,r8
 	0xE9: {Type: inJp, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},    // JP (HL)
