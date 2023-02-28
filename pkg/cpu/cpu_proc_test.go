@@ -11,9 +11,11 @@ const(
 	jpAddress uint16 = 0xFEA // Why this address? Because it means ugly is spanish :)
 
 	// Constants regarding TestCallExecFunc
-	callDummyAddress uint16 = 0x2AE
-	initPCAddress uint16 = 0x150
-	stackPointerInitPosition uint16 = 0xDFFF
+	callDummyAddress         uint16 = 0x2AE
+	callInitPCAddress            uint16 = 0x150
+	callStackPointerInitPosition uint16 = 0xDFFF
+
+	rstInitPCAddress uint16 = 0x150
 )
 
 // TestJpExecFunc tests JP
@@ -182,8 +184,8 @@ func TestCallExecFunc(t *testing.T) {
 	for _, test := range tests {
 		cpu.CurrentInstruction = Instruction{Condition: test.condition}
 		cpu.FetchedData = test.addressToCall
-		cpu.registers.PC = initPCAddress
-		cpu.registers.SP = stackPointerInitPosition
+		cpu.registers.PC = callInitPCAddress
+		cpu.registers.SP = callStackPointerInitPosition
 		cpu.registers.SetFZ(test.Z)
 		cpu.registers.SetFC(test.C)
 
@@ -195,29 +197,29 @@ func TestCallExecFunc(t *testing.T) {
 					test.testName, callDummyAddress, cpu.registers.PC)
 			}
 
-			if cpu.registers.SP != stackPointerInitPosition - 2 { // Check that SP has decreased by 2 bytes
+			if cpu.registers.SP != callStackPointerInitPosition- 2 { // Check that SP has decreased by 2 bytes
 				t.Errorf("[%s] SP should be %d and it is %d",
-					test.testName, stackPointerInitPosition - 2, cpu.registers.SP)
+					test.testName, callStackPointerInitPosition- 2, cpu.registers.SP)
 			}
 
 			low := cpu.bus.BusRead(cpu.registers.SP)
 			high := cpu.bus.BusRead(cpu.registers.SP + 1)
 
-			if initPCAddress != uint16(high)<<8 | uint16(low) { // Check that written PC in the stack is the one prior CALL
+			if callInitPCAddress != uint16(high)<<8 | uint16(low) { // Check that written PC in the stack is the one prior CALL
 				t.Errorf("[%s] The PC addr recovered from stack %X does not match with the init one %X",
-					test.testName, uint16(high)<<8 | uint16(low), initPCAddress)
+					test.testName, uint16(high)<<8 | uint16(low), callInitPCAddress)
 			}
 		}
 
 		if !test.shouldJump {
-			if cpu.registers.PC != initPCAddress { // Check that PC has not moved
+			if cpu.registers.PC != callInitPCAddress { // Check that PC has not moved
 				t.Errorf("[%s] The program counter shouldn't have from %X and it is %X",
-					test.testName, initPCAddress, cpu.registers.PC)
+					test.testName, callInitPCAddress, cpu.registers.PC)
 			}
 
-			if cpu.registers.SP != stackPointerInitPosition { // Check that SP is the same prior the call
+			if cpu.registers.SP != callStackPointerInitPosition { // Check that SP is the same prior the call
 				t.Errorf("[%s] SP shouldn't have moved from %X and it is %X",
-					test.testName, stackPointerInitPosition, cpu.registers.SP)
+					test.testName, callStackPointerInitPosition, cpu.registers.SP)
 			}
 
 		}
@@ -226,7 +228,77 @@ func TestCallExecFunc(t *testing.T) {
 }
 
 // TestRstExecFunc tests RST
-func TestRstExecFunc(t *testing.T) {}
+func TestRstExecFunc(t *testing.T) {
+	cpu := Init(bus.NewMapMock(), &log.NilLogger{})
+
+	tests := []struct{
+		testName string
+		addressToJump byte
+
+	}{
+		{
+			testName: "1 - Test RST 00H",
+			addressToJump: 0x00,
+
+		},
+		{
+			testName: "2 - Test RST 08H",
+			addressToJump: 0x08,
+
+		},
+		{
+			testName: "3 - Test RST 10H",
+			addressToJump: 0x10,
+
+		},
+		{
+			testName: "4 - Test RST 18H",
+			addressToJump: 0x18,
+
+		},
+		{
+			testName: "5 - Test RST 20H",
+			addressToJump: 0x20,
+
+		},
+		{
+			testName: "6 - Test RST 28H",
+			addressToJump: 0x28,
+
+		},
+		{
+			testName: "7 - RST 30H",
+			addressToJump: 0x30,
+
+		},
+		{
+			testName: "8 - Test RST 38H",
+			addressToJump: 0x38,
+
+		},
+	}
+
+	for _, test := range tests {
+		cpu.CurrentInstruction = Instruction{Parameter: test.addressToJump}
+		cpu.registers.PC = rstInitPCAddress
+
+		rstExecFunc(cpu)
+
+		if byte(cpu.registers.PC & 0xFF) != test.addressToJump {
+			t.Errorf("[%s] PC should have jumped to %X and it is %X",
+				test.testName, test.addressToJump, cpu.registers.PC)
+		}
+
+		low := cpu.bus.BusRead(cpu.registers.SP)
+		high := cpu.bus.BusRead(cpu.registers.SP + 1)
+
+		if rstInitPCAddress != uint16(high)<<8 | uint16(low) { // Check that written PC in the stack is the one prior CALL
+			t.Errorf("[%s] PC address recovered from stack %X does not match with the init one %X",
+				test.testName, uint16(high)<<8 | uint16(low), rstInitPCAddress)
+		}
+
+	}
+}
 
 // TestRetExecFunc tests RET
 func TestRetExecFunc(t *testing.T) {}
