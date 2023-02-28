@@ -199,6 +199,14 @@ var instructionsMap = map[byte]Instruction{
 	0xAE: {Type: inXor, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "XOR (HL)", execFunc: xorExecFunc}, // XOR (HL)
 	0xAF: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
 	// 0xB
+	0xB0: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "OR B", execFunc: orExecFunc}, // OR B
+	0xB1: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "OR C", execFunc: orExecFunc}, // OR C
+	0xB2: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "OR D", execFunc: orExecFunc}, // OR D
+	0xB3: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "OR E", execFunc: orExecFunc}, // OR E
+	0xB4: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "OR H", execFunc: orExecFunc}, // OR H
+	0xB5: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "OR L", execFunc: orExecFunc}, // OR L
+	0xB6: {Type: inOr, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "OR (HL)", execFunc: orExecFunc}, // OR (HL)
+	0xB7: {Type: inOr, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "OR A", execFunc: orExecFunc}, // OR A
 	// 0xC
 	0xC0: {Type: inRet, Mnemonic: "RET NZ", Condition: ctNZ, execFunc: retExecFunc},                               // RET NZ
 	0xC1: {Type: inPop, AddressingMode: amImp, RegisterType1: rtBC, Mnemonic: "POP BC", execFunc: popExecFunc},    // POP BC
@@ -247,6 +255,7 @@ var instructionsMap = map[byte]Instruction{
 	0xF2: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "LD A,(C)", execFunc: ldExecFunc}, // LD A,(C)
 	0xF3: {Type: inDi, Mnemonic: "DI", execFunc: diExecFunc},                                                                       // DI
 	0xF5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtAF, Mnemonic: "PUSH AF", execFunc: pushExecFunc},                  // PUSH AF
+	0xF6: {Type: inOr, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "OR d8", execFunc: orExecFunc},                        // OR d8
 	0xF7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 30H", Parameter: 0x30, execFunc: rstExecFunc},                        // RST 30H
 	// 0xF8: {Type: inLd, AddressingMode: amHLnSPR, Mnemonic: "LD HL,SP+r8", execFunc: ldExecFunc},                                     // LD HL,SP+r8
 	0xF9: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtSP, RegisterType2: rtHL, Mnemonic: "LD SP,HL", execFunc: ldExecFunc}, // LD SP,HL
