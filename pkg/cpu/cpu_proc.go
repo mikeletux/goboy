@@ -1,7 +1,6 @@
 package cpu
 
 func nopExecFunc(c *CPU) {
-	c.emulateCpuCycles(4)
 	return
 }
 
