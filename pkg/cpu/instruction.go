@@ -29,6 +29,7 @@ var instructionsMap = map[byte]Instruction{
 	0x05: {Type: inDec, AddressingMode: amR, RegisterType1: rtB, Mnemonic: "DEC B", execFunc: decExecFunc},                           // DEC B
 	0x06: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtB, Mnemonic: "LD B,d8", execFunc: ldExecFunc},                        // LD B,d8
 	0x08: {Type: inLd, AddressingMode: amA16nR, RegisterType2: rtSP, Mnemonic: "LD (a16),SP", execFunc: ldExecFunc},                  // LD (a16),SP
+	0x09: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtHL, RegisterType2: rtBC, Mnemonic: "ADD HL,BC", execFunc: addExecFunc}, // ADD HL,BC
 	0x0A: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtBC, Mnemonic: "LD A,(BC)", execFunc: ldExecFunc}, // LD A,(BC)
 	0x0B: {Type: inDec, AddressingMode: amR, RegisterType1: rtBC, Mnemonic: "DEC BC", execFunc: decExecFunc},                         // DEC BC
 	0x0C: {Type: inInc, AddressingMode: amR, RegisterType1: rtC, Mnemonic: "INC C", execFunc: incExecFunc},                           // INC C
@@ -42,6 +43,7 @@ var instructionsMap = map[byte]Instruction{
 	0x15: {Type: inDec, AddressingMode: amR, RegisterType1: rtD, Mnemonic: "DEC D", execFunc: decExecFunc},                           // DEC D
 	0x16: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtD, Mnemonic: "LD D,d8", execFunc: ldExecFunc},                        // LD D,d8
 	0x18: {Type: inJr, AddressingMode: amD8, Mnemonic: "JR r8", Condition: ctNone, execFunc: jrExecFunc},                             // JR r8
+	0x19: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtHL, RegisterType2: rtDE, Mnemonic: "ADD HL,DE", execFunc: addExecFunc}, // ADD HL,DE
 	0x1A: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtDE, Mnemonic: "LD A,(DE)", execFunc: ldExecFunc}, // LD A,(DE)
 	0x1B: {Type: inDec, AddressingMode: amR, RegisterType1: rtDE, Mnemonic: "DEC DE", execFunc: decExecFunc},                         // DEC DE
 	0x1C: {Type: inInc, AddressingMode: amR, RegisterType1: rtE, Mnemonic: "INC E", execFunc: incExecFunc},                           // INC E
@@ -56,6 +58,7 @@ var instructionsMap = map[byte]Instruction{
 	0x25: {Type: inDec, AddressingMode: amR, RegisterType1: rtH, Mnemonic: "DEC H", execFunc: decExecFunc},                             // DEC H
 	0x26: {Type: inLd, AddressingMode: amRnD8, RegisterType1: rtH, Mnemonic: "LD H,d8", execFunc: ldExecFunc},                          // LD H,d8
 	0x28: {Type: inJr, AddressingMode: amD8, Mnemonic: "JR Z,r8", Condition: ctZ, execFunc: jrExecFunc},                                // JR Z,r8
+	0x29: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtHL, RegisterType2: rtHL, Mnemonic: "ADD HL,HL", execFunc: addExecFunc}, // ADD HL,HL
 	0x2A: {Type: inLd, AddressingMode: amRnHLI, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "LD A,(HL+)", execFunc: ldExecFunc}, // LD A,(HL+)
 	0x2B: {Type: inDec, AddressingMode: amR, RegisterType1: rtHL, Mnemonic: "DEC HL", execFunc: decExecFunc},                           // DEC HL
 	0x2C: {Type: inInc, AddressingMode: amR, RegisterType1: rtL, Mnemonic: "INC L", execFunc: incExecFunc},                             // INC L
@@ -70,6 +73,7 @@ var instructionsMap = map[byte]Instruction{
 	0x35: {Type: inDec, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "DEC (HL)", execFunc: decExecFunc},                        // DEC (HL)
 	0x36: {Type: inLd, AddressingMode: amMRnD8, RegisterType1: rtHL, Mnemonic: "LD (HL),d8", execFunc: ldExecFunc},                     // LD (HL),d8
 	0x38: {Type: inJr, AddressingMode: amD8, Mnemonic: "JR C,r8", Condition: ctC, execFunc: jrExecFunc},                                // JR C,r8
+	0x39: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtHL, RegisterType2: rtSP, Mnemonic: "ADD HL,SP", execFunc: addExecFunc}, // ADD HL,SP
 	0x3A: {Type: inLd, AddressingMode: amRnHLD, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "LD A,(HL-)", execFunc: ldExecFunc}, // LD A,(HL-)
 	0x3B: {Type: inDec, AddressingMode: amR, RegisterType1: rtSP, Mnemonic: "DEC SP", execFunc: decExecFunc},                           // DEC SP
 	0x3C: {Type: inInc, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "INC A", execFunc: incExecFunc},                             // INC A
@@ -144,6 +148,14 @@ var instructionsMap = map[byte]Instruction{
 	0x7E: {Type: inLd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "LD A,(HL)", execFunc: ldExecFunc}, // LD A,(HL)
 	0x7F: {Type: inLd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "LD A,A", execFunc: ldExecFunc},      // LD A,A
 	// 0x8
+	0x80: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "ADD A,B", execFunc: addExecFunc}, // ADD A,B
+	0x81: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "ADD A,C", execFunc: addExecFunc}, // ADD A,C
+	0x82: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "ADD A,D", execFunc: addExecFunc}, // ADD A,D
+	0x83: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "ADD A,E", execFunc: addExecFunc}, // ADD A,E
+	0x84: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "ADD A,H", execFunc: addExecFunc}, // ADD A,H
+	0x85: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "ADD A,L", execFunc: addExecFunc}, // ADD A,L
+	0x86: {Type: inAdd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "ADD A,(HL)", execFunc: addExecFunc}, // ADD A,(HL)
+	0x87: {Type: inAdd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "ADD A,A", execFunc: addExecFunc}, // ADD A,A
 	// 0x9
 	// 0xA
 	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
@@ -155,6 +167,7 @@ var instructionsMap = map[byte]Instruction{
 	0xC3: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP a16", execFunc: jpExecFunc},                           // JP a16
 	0xC4: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL NZ,a16", Condition: ctNZ, execFunc: callExecFunc}, // CALL NZ,a16
 	0xC5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtBC, Mnemonic: "PUSH BC", execFunc: pushExecFunc}, // PUSH BC
+	0xC6: {Type: inAdd, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "ADD A,d8", execFunc: addExecFunc}, // ADD A,d8
 	0xC7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 00H", Parameter: 0x0, execFunc: rstExecFunc},        // RST 00H
 	0xC8: {Type: inRet, Mnemonic: "RET Z", Condition: ctZ, execFunc: retExecFunc},                                 // RET Z
 	0xC9: {Type: inRet, Mnemonic: "RET", Condition: ctNone, execFunc: retExecFunc},                                // RET
@@ -180,6 +193,7 @@ var instructionsMap = map[byte]Instruction{
 	0xE2: {Type: inLd, AddressingMode: amMRnR, RegisterType1: rtC, RegisterType2: rtA, Mnemonic: "LD (C),A", execFunc: ldExecFunc}, // LD (C),A
 	0xE5: {Type: inPush, AddressingMode: amImp, RegisterType1: rtHL, Mnemonic: "PUSH HL", execFunc: pushExecFunc},                  // PUSH HL
 	0xE7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 20H", Parameter: 0x20, execFunc: rstExecFunc},                        // RST 20H
+	0xE8: {Type: inAdd, AddressingMode: amRnD8, RegisterType1: rtSP, Mnemonic: "ADD SP,r8", execFunc: addExecFunc},                 // ADD SP,r8
 	0xE9: {Type: inJp, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},    // JP (HL)
 	0xEA: {Type: inLd, AddressingMode: amA16nR, RegisterType2: rtA, Mnemonic: "LD (a16),A", execFunc: ldExecFunc},                  // LD (a16),A
 	0xEF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 28H", Parameter: 0x28, execFunc: rstExecFunc},                        // RST 28H
