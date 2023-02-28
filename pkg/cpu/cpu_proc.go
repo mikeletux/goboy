@@ -5,14 +5,6 @@ func nopExecFunc(c *CPU) {
 	return
 }
 
-func xorExecFunc(c *CPU) {
-	c.registers.A ^= c.registers.A // This is for sure wrong. Double check
-	if c.registers.A == 0x0 {
-		c.registers.SetFZ(true)
-	}
-	c.emulateCpuCycles(4)
-}
-
 func jpExecFunc(c *CPU) {
 	c.gotoAddr(c.FetchedData, false)
 }
@@ -273,4 +265,36 @@ func sbcExecFunc(c *CPU) {
 	c.registers.SetFN(true)
 	c.registers.SetFH(int(regAValue & 0xF) - int(c.FetchedData & 0xF) - int(carry) < 0)
 	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) - int(carry) < 0)
+}
+
+func andExecFunc(c *CPU) {
+	c.registers.A &= byte(c.FetchedData & 0xFF)
+
+	c.registers.SetFZ(c.registers.A == 0)
+	c.registers.SetFN(false)
+	c.registers.SetFH(true)
+	c.registers.SetFC(false)
+}
+
+func xorExecFunc(c *CPU) {
+	c.registers.A ^= byte(c.FetchedData & 0xFF)
+
+	c.registers.SetFZ(c.registers.A == 0)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(false)
+}
+func orExecFunc(c *CPU) {
+	c.registers.A |= byte(c.FetchedData & 0xFF)
+
+	c.registers.SetFZ(c.registers.A == 0)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(false)
+}
+func cpExecFunc(c *CPU) {
+	c.registers.SetFZ(c.registers.A - byte(c.FetchedData) == 0)
+	c.registers.SetFN(true)
+	c.registers.SetFH(int(c.registers.A & 0xF) - int(c.FetchedData & 0xF) < 0)
+	c.registers.SetFC(int(c.registers.A & 0xFF) - int(c.FetchedData & 0xFF) < 0)
 }
