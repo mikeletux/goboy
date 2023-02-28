@@ -190,7 +190,14 @@ var instructionsMap = map[byte]Instruction{
 	0xA5: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "AND L", execFunc: andExecFunc}, // AND L
 	0xA6: {Type: inAnd, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "AND (HL)", execFunc: andExecFunc}, // AND (HL)
 	0xA7: {Type: inAnd, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "AND A", execFunc: andExecFunc}, // AND A
-	0xAF: {Type: inXor, AddressingMode: amR, RegisterType1: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
+	0xA8: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtB, Mnemonic: "XOR B", execFunc: xorExecFunc}, // XOR B
+	0xA9: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtC, Mnemonic: "XOR C", execFunc: xorExecFunc}, // XOR C
+	0xAA: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtD, Mnemonic: "XOR D", execFunc: xorExecFunc}, // XOR D
+	0xAB: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtE, Mnemonic: "XOR E", execFunc: xorExecFunc}, // XOR E
+	0xAC: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtH, Mnemonic: "XOR H", execFunc: xorExecFunc}, // XOR H
+	0xAD: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtL, Mnemonic: "XOR L", execFunc: xorExecFunc}, // XOR L
+	0xAE: {Type: inXor, AddressingMode: amRnMR, RegisterType1: rtA, RegisterType2: rtHL, Mnemonic: "XOR (HL)", execFunc: xorExecFunc}, // XOR (HL)
+	0xAF: {Type: inXor, AddressingMode: amRnR, RegisterType1: rtA, RegisterType2: rtA, Mnemonic: "XOR A", execFunc: xorExecFunc}, // XOR A
 	// 0xB
 	// 0xC
 	0xC0: {Type: inRet, Mnemonic: "RET NZ", Condition: ctNZ, execFunc: retExecFunc},                               // RET NZ
@@ -232,6 +239,7 @@ var instructionsMap = map[byte]Instruction{
 	0xE8: {Type: inAdd, AddressingMode: amRnD8, RegisterType1: rtSP, Mnemonic: "ADD SP,r8", execFunc: addExecFunc},                 // ADD SP,r8
 	0xE9: {Type: inJp, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},    // JP (HL)
 	0xEA: {Type: inLd, AddressingMode: amA16nR, RegisterType2: rtA, Mnemonic: "LD (a16),A", execFunc: ldExecFunc},                  // LD (a16),A
+	0xEE: {Type: inXor, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "XOR d8", execFunc: xorExecFunc},                     // XOR d8
 	0xEF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 28H", Parameter: 0x28, execFunc: rstExecFunc},                        // RST 28H
 	// 0xF
 	0xF0: {Type: inLdh, AddressingMode: amRnA8, RegisterType1: rtA, Mnemonic: "LDH A,(a8)", execFunc: ldhExecFunc},                 // LDH A,(a8)
