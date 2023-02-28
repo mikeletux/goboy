@@ -222,4 +222,22 @@ func addExecFunc(c *CPU) {
 	c.registers.SetFC(flagC)
 }
 
-func adcExecFunc(c *CPU) {}
+func adcExecFunc(c *CPU) {
+	regAValue, err := c.registers.FetchDataFromRegisters(rtA)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	var result,carry uint16
+	if c.registers.GetFC() {
+		carry = 1
+	}
+
+	result = regAValue + c.FetchedData + carry
+	c.registers.A = byte(result & 0xFF)
+
+	c.registers.SetFZ(result & 0xFF == 0)
+	c.registers.SetFN(false)
+	c.registers.SetFH(regAValue & 0xF + c.FetchedData & 0xF + carry >= 0x10)
+	c.registers.SetFC(result >= 0x100)
+}
