@@ -241,3 +241,19 @@ func adcExecFunc(c *CPU) {
 	c.registers.SetFH(regAValue & 0xF + c.FetchedData & 0xF + carry >= 0x10)
 	c.registers.SetFC(result >= 0x100)
 }
+
+func subExecFunc(c *CPU) {
+	regAValue, err := c.registers.FetchDataFromRegisters(rtA)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	c.registers.A = byte(regAValue & 0xFF - c.FetchedData & 0xFF)
+
+	c.registers.SetFZ(regAValue & 0xFF - c.FetchedData & 0xFF == 0)
+	c.registers.SetFN(true)
+	c.registers.SetFH(int(regAValue & 0xF) - int(c.FetchedData & 0xF) < 0)
+	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) < 0)
+}
+
+func sbcExecFunc(c *CPU) {}
