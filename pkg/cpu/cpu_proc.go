@@ -256,4 +256,21 @@ func subExecFunc(c *CPU) {
 	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) < 0)
 }
 
-func sbcExecFunc(c *CPU) {}
+func sbcExecFunc(c *CPU) {
+	regAValue, err := c.registers.FetchDataFromRegisters(rtA)
+	if err != nil {
+		c.logger.Fatal(err)
+	}
+
+	var carry uint16
+	if c.registers.GetFC() {
+		carry = 1
+	}
+
+	c.registers.A = byte(regAValue & 0xFF - c.FetchedData & 0xFF - carry)
+
+	c.registers.SetFZ(regAValue & 0xFF - c.FetchedData & 0xFF - carry == 0)
+	c.registers.SetFN(true)
+	c.registers.SetFH(int(regAValue & 0xF) - int(c.FetchedData & 0xF) - int(carry) < 0)
+	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) - int(carry) < 0)
+}
