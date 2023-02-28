@@ -261,9 +261,3 @@ func (c *CPU) Step() bool {
 func (c *CPU) emulateCpuCycles(numCycles int) { // TO BE IMPLEMENTED
 	return
 }
-
-func (c *CPU) logRegisterValues(instructionPC uint16) {
-	c.logger.Debugf("[PC:%X]:%X(%s) - [AF:%X] [BC:%X] [DE:%X] [HL:%X] [SP:%X]",
-		instructionPC, c.CurrentOperationCode, c.CurrentInstruction.Mnemonic, c.registers.GetAF(), c.registers.GetBC(),
-		c.registers.GetDE(), c.registers.GetHL(), c.registers.SP)
-}
