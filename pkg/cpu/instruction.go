@@ -227,6 +227,7 @@ var instructionsMap = map[byte]Instruction{
 	0xC8: {Type: inRet, Mnemonic: "RET Z", Condition: ctZ, execFunc: retExecFunc},                                 // RET Z
 	0xC9: {Type: inRet, Mnemonic: "RET", Condition: ctNone, execFunc: retExecFunc},                                // RET
 	0xCA: {Type: inJp, AddressingMode: amD16, Mnemonic: "JP Z,a16", Condition: ctZ, execFunc: jpExecFunc},         // JP Z,a16
+	0xCB: {Type: inCb, AddressingMode: amD8, Mnemonic: "PREFIX CB", execFunc: cbExecFunc},                         // PREFIX CB
 	0xCC: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL Z,a16", Condition: ctZ, execFunc: callExecFunc},   // CALL Z,a16
 	0xCD: {Type: inCall, AddressingMode: amD16, Mnemonic: "CALL a16", Condition: ctNone, execFunc: callExecFunc},  // CALL a16
 	0xCE: {Type: inAdc, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "ADC A,d8", execFunc: adcExecFunc}, // ADC A,d8
