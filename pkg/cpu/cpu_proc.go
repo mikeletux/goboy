@@ -345,10 +345,47 @@ func cbExecFunc(c *CPU) {
 		c.setRegisterPrefixCB(registerType, result)
 
 		return
-		
+
 	case 1: // RRC
+		old := registerValue
+		registerValue >>= 1
+		registerValue |= old<<7
+
+		c.setRegisterPrefixCB(registerType, registerValue)
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(old & 1 == 1)
+
+		return
 	case 2: // RL
+		old := registerValue
+		registerValue <<= 1
+		if c.registers.GetFC() {
+			registerValue |= 0x1
+		}
+
+		c.setRegisterPrefixCB(registerType, registerValue)
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(old & 0x80 == 0x80)
+
+		return
 	case 3: // RR
+		old := registerValue
+		registerValue >>= 1
+		if c.registers.GetFC() {
+			registerValue |= 1<<7
+		}
+
+		c.setRegisterPrefixCB(registerType, registerValue)
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(old & 0x1 == 0x1)
+
+		return
 	case 4: // SLA
 	case 5: // SRA
 	case 6: // SWAP
