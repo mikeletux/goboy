@@ -328,4 +328,31 @@ func cbExecFunc(c *CPU) {
 		return
 	}
 
+	switch bit {
+	case 0: // RLC
+		setC := false
+		result := (registerValue << 1) & 0xFF
+
+		if registerValue & (1<<7) != 0 {
+			result |= 1
+			setC = true
+		}
+
+		c.registers.SetFZ(result == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(setC)
+		c.setRegisterPrefixCB(registerType, result)
+
+		return
+		
+	case 1: // RRC
+	case 2: // RL
+	case 3: // RR
+	case 4: // SLA
+	case 5: // SRA
+	case 6: // SWAP
+	case 7: // SRL
+	}
+
 }
