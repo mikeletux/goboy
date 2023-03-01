@@ -13,12 +13,13 @@ type DataBusInterface interface {
 	// Probably I need a method to return the ieRegister
 }
 
-// Bus represents the whole Gameboy bus
+// Bus represents the whole Game boy bus
 type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
 	Cartridge  cart.CartridgeInterface
 	logger     log.Logger
 	ram        *Ram
+	io         *io
 	ieRegister byte
 }
 
@@ -28,13 +29,14 @@ func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 		Cartridge: cartridge,
 		logger:    logger,
 		ram:       NewRam(logger),
+		io: NewIO(logger),
 	}
 }
 
 // BusRead given an address it returns the value from that bus memory area.
 func (b *Bus) BusRead(address uint16) byte {
 	switch {
-	case address >= RomBank00Start && address <= RomBank01NNEnd: // Cartridge ROM area
+	case address <= RomBank01NNEnd: // Cartridge ROM area
 		return b.Cartridge.CartRead(address)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
@@ -58,8 +60,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return 0x0
 
 	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
-		// TO-DO
-		b.logger.Fatalf("IO Registers area bus address 0x%X yet not implemented to read", address)
+		return b.io.IORead(address)
 
 	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
 		b.ram.readHighRam(address)
@@ -77,7 +78,7 @@ func (b *Bus) BusRead(address uint16) byte {
 // BusWrite writes a byte into bus given a bus memory area.
 func (b *Bus) BusWrite(address uint16, value byte) {
 	switch {
-	case address >= RomBank00Start && address <= RomBank01NNEnd: // Cartridge ROM area
+	case address <= RomBank01NNEnd: // Cartridge ROM area
 		b.Cartridge.CartWrite(address, value)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
@@ -95,8 +96,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to write", address)
 
 	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
-		// TO-DO
-		b.logger.Debugf("IO Registers area bus address 0x%X yet not implemented to write", address)
+		b.io.IOWrite(address, value)
 
 	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
 		b.ram.writeHighRam(address, value)
@@ -114,7 +114,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 func (b *Bus) BusRead16(address uint16) uint16 {
 	low := b.BusRead(address)
 	high := b.BusRead(address + 1)
-	return uint16(high<<8 | low)
+	return uint16(high)<<8 | uint16(low)
 }
 
 // BusWrite16 writes 16 bit value into bus given a bus memory area.
