@@ -72,6 +72,10 @@ func diExecFunc(c *CPU) {
 	c.EnableMasterInterruptions = false
 }
 
+func eiExecFunc(c *CPU) {
+	c.EnablingIme = true
+}
+
 func ldExecFunc(c *CPU) {
 	if c.DestinationIsMemory {
 		// We need to write in memory
@@ -487,4 +491,54 @@ func rraExecFunc(c *CPU){
 	c.registers.SetFN(false)
 	c.registers.SetFH(false)
 	c.registers.SetFC(newCarry == 0x1)
+}
+
+func stopExecFunc(c *CPU) {
+	c.logger.Fatal("Stopping Gameboy...") // Do some research about how to implement this better.
+}
+
+func daaExecFunc(c *CPU) {
+	u := byte(0)
+	fc := 0
+
+	if c.registers.GetFH() || (!c.registers.GetFN() && (c.registers.A & 0xF) > 9) {
+		u = 6
+	}
+
+	if c.registers.GetFC() || (!c.registers.GetFN() && c.registers.A > 0x99) {
+		u |= 0x60
+		fc = 1
+	}
+
+	if c.registers.GetFN() {
+		c.registers.A += -u
+	} else {
+		c.registers.A += u
+	}
+
+	c.registers.SetFZ(c.registers.A == 0)
+	c.registers.SetFH(false)
+	c.registers.SetFC(fc == 1)
+}
+
+func cplExecFunc(c *CPU) {
+	c.registers.A = ^c.registers.A
+	c.registers.SetFN(true)
+	c.registers.SetFH(true)
+}
+
+func scfExecFunc(c *CPU) {
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(true)
+}
+
+func ccfExecFunc(c *CPU) {
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(!c.registers.GetFC()) // Flip the carry flag
+}
+
+func haltExecFunc(c *CPU) {
+	c.Halted = true
 }
