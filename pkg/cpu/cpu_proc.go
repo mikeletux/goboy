@@ -387,9 +387,46 @@ func cbExecFunc(c *CPU) {
 
 		return
 	case 4: // SLA
-	case 5: // SRA
-	case 6: // SWAP
-	case 7: // SRL
-	}
+		old := registerValue
+		registerValue <<= 1
 
+
+		c.setRegisterPrefixCB(registerType, registerValue)
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(old & 0x80 == 0x80)
+
+		return
+	case 5: // SRA (arithmetic shift to the right)
+		u := int8(registerValue) >> 1
+		c.setRegisterPrefixCB(registerType, byte(u))
+		c.registers.SetFZ(u == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(registerValue & 0x1 == 0x1)
+
+		return
+	case 6: // SWAP (swap high nibble with low nibble)
+		registerValue = (registerValue & 0xF0)>>4 | (registerValue & 0xF)<<4
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(false)
+
+		return
+	case 7: // SRL (logical shift to the right)
+		old := registerValue
+		registerValue >>= 1
+
+		c.setRegisterPrefixCB(registerType, registerValue)
+		c.registers.SetFZ(registerValue == 0)
+		c.registers.SetFN(false)
+		c.registers.SetFH(false)
+		c.registers.SetFC(old & 0x1 == 0x1)
+
+		return
+	}
+	
+	c.logger.Fatalf("Invalid CB %X", cbOperation)
 }
