@@ -300,5 +300,32 @@ func cpExecFunc(c *CPU) {
 }
 
 func cbExecFunc(c *CPU) {
+	cbOperation := byte(c.FetchedData & 0xFF)
+	registerType := decodePrefixCBRegister(cbOperation)
+	bit := (cbOperation>>3) & 0b111
+	bitOperation := (cbOperation>>6) & 0b11
+	registerValue := c.fetchRegisterPrefixCB(registerType)
+
+	c.emulateCpuCycles(1)
+
+	if registerType == rtHL {
+		c.emulateCpuCycles(2)
+	}
+
+	switch bitOperation {
+	case 1: // BIT
+		c.registers.SetFZ((registerValue & (1<<bit)) != (1<<bit))
+		c.registers.SetFN(false)
+		c.registers.SetFH(true)
+		return
+	case 2: // RES
+		registerValue &^= 1 << bit
+		c.setRegisterPrefixCB(registerType, registerValue)
+		return
+	case 3: // SET
+		registerValue |= 1 << bit
+		c.setRegisterPrefixCB(registerType, registerValue)
+		return
+	}
 
 }
