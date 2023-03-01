@@ -211,7 +211,9 @@ type CPU struct {
 	DestinationIsMemory       bool
 	CurrentOperationCode      byte
 	CurrentInstruction        Instruction
+
 	EnableMasterInterruptions bool
+	EnablingIme bool
 
 	Halted   bool
 	Stepping bool
