@@ -1,4 +1,5 @@
 package cpu
+import "C"
 
 func nopExecFunc(c *CPU) {
 	return
@@ -21,7 +22,7 @@ func retExecFunc(c *CPU) {
 		c.emulateCpuCycles(1)
 	}
 
-	if checkCondition(c) {
+	if c.checkCondition() {
 		low := c.stackPop()
 		c.emulateCpuCycles(1)
 		high := c.stackPop()
@@ -296,4 +297,8 @@ func cpExecFunc(c *CPU) {
 	c.registers.SetFN(true)
 	c.registers.SetFH(int(c.registers.A & 0xF) - int(c.FetchedData & 0xF) < 0)
 	c.registers.SetFC(int(c.registers.A & 0xFF) - int(c.FetchedData & 0xFF) < 0)
+}
+
+func cbExecFunc(c *CPU) {
+
 }
