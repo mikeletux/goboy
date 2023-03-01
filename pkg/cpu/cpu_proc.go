@@ -427,6 +427,64 @@ func cbExecFunc(c *CPU) {
 
 		return
 	}
-	
+
 	c.logger.Fatalf("Invalid CB %X", cbOperation)
+}
+
+func rlcaExecFunc(c *CPU){
+	u := c.registers.A
+	var carry byte
+	if u >> 7 == 0x1 {
+		carry = 0x1
+	}
+
+	u = (u << 1) | carry
+	c.registers.A = u
+	c.registers.SetFZ(false)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(carry == 0x1)
+}
+
+func rrcaExecFunc(c *CPU){
+	b := c.registers.A & 0x1
+	c.registers.A >>= 1
+	c.registers.A |= b<<7
+
+	c.registers.SetFZ(false)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(b == 0x1)
+}
+
+func rlaExecFunc(c *CPU){
+	u := c.registers.A
+	var carryFlag byte
+	if c.registers.GetFC() {
+		carryFlag = 0x1
+	}
+
+	carry := (u >> 7) & 0x1
+
+	c.registers.A = (u<<1) | carryFlag
+	c.registers.SetFZ(false)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(carry == 0x1)
+}
+
+func rraExecFunc(c *CPU){
+	var carry byte
+	if c.registers.GetFC() {
+		carry = 0x1 << 7
+	}
+
+	newCarry := c.registers.A & 0x1
+
+	c.registers.A >>= 1
+	c.registers.A |= carry
+	c.registers.SetFZ(false)
+	c.registers.SetFN(false)
+	c.registers.SetFH(false)
+	c.registers.SetFC(newCarry == 0x1)
 }
