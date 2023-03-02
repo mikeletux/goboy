@@ -9,6 +9,7 @@ worked by implementing a minimal viable emulator.
 - [gbdev.io Pan Docs](https://gbdev.io/pandocs/)
 - [lowleveldevel1712 YouTube channel](https://www.youtube.com/@lowleveldevel1712)
 - [Gameboy CPU (LR35902) instruction set](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
+- [Gameboy Doctor](https://github.com/robert/gameboy-doctor) 
 - ...
 
 ## Roadmap
