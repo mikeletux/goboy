@@ -3,7 +3,7 @@ package bus
 import "github.com/mikeletux/goboy/pkg/log"
 
 type io struct {
-	logger log.Logger
+	logger     log.Logger
 	serialData [2]byte
 }
 
@@ -20,6 +20,10 @@ func (i *io) IORead(address uint16) byte {
 
 	if address == 0xFF02 {
 		return i.serialData[1]
+	}
+
+	if address == 0xFF44 {
+		return 0x90 // Hardcoded value for Gameboy doctor
 	}
 
 	// i.logger.Debug("unsupported io read")
