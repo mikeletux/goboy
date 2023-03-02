@@ -263,7 +263,7 @@ var instructionsMap = map[byte]Instruction{
 	0xE6: {Type: inAnd, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "AND d8", execFunc: andExecFunc},                     // AND d8
 	0xE7: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 20H", Parameter: 0x20, execFunc: rstExecFunc},                        // RST 20H
 	0xE8: {Type: inAdd, AddressingMode: amRnD8, RegisterType1: rtSP, Mnemonic: "ADD SP,r8", execFunc: addExecFunc},                 // ADD SP,r8
-	0xE9: {Type: inJp, AddressingMode: amMR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},    // JP (HL) CHECK VIDEO 9 DUE TO POSSIBLE BUG
+	0xE9: {Type: inJp, AddressingMode: amR, RegisterType1: rtHL, Mnemonic: "JP (HL)", Condition: ctNone, execFunc: jpExecFunc},     // JP (HL)
 	0xEA: {Type: inLd, AddressingMode: amA16nR, RegisterType2: rtA, Mnemonic: "LD (a16),A", execFunc: ldExecFunc},                  // LD (a16),A
 	0xEE: {Type: inXor, AddressingMode: amRnD8, RegisterType1: rtA, Mnemonic: "XOR d8", execFunc: xorExecFunc},                     // XOR d8
 	0xEF: {Type: inRst, AddressingMode: amImp, Mnemonic: "RST 28H", Parameter: 0x28, execFunc: rstExecFunc},                        // RST 28H
