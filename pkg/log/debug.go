@@ -58,7 +58,7 @@ func NewBuiltinStdoutLogger(logStdout bool, logPath string) (*BuiltinLogger, err
 	return &BuiltinLogger{
 		noLog:   noLog,
 		logFile: logFile,
-		logger:  log.New(writer, "", log.Ldate|log.Ltime|log.Lshortfile),
+		logger:  log.New(writer, "", 0),
 	}, nil
 }
 
