@@ -22,7 +22,7 @@ func (i *io) IORead(address uint16) byte {
 		return i.serialData[1]
 	}
 
-	i.logger.Debug("unsupported io read")
+	// i.logger.Debug("unsupported io read")
 	return 0
 }
 
@@ -35,5 +35,5 @@ func (i *io) IOWrite(address uint16, data byte) {
 		i.serialData[1] = data
 	}
 
-	i.logger.Debug("unsupported io write")
+	// i.logger.Debug("unsupported io write")
 }
