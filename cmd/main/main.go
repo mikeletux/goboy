@@ -13,7 +13,10 @@ func main() {
 	flag.Parse()
 
 	// Build stdout logger
-	logger := log.NewBuiltinStdoutLogger()
+	logger, err := log.NewBuiltinStdoutLogger(true, "/home/mikeletux/development/goboy/log/goboy.log")
+	if err != nil {
+		panic(err)
+	}
 
 	// Build cartridge
 	cartridge, err := cart.NewCartridge(*romCartridgePath, logger)
