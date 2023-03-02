@@ -29,7 +29,7 @@ func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 		Cartridge: cartridge,
 		logger:    logger,
 		ram:       NewRam(logger),
-		io: NewIO(logger),
+		io:        NewIO(logger),
 	}
 }
 
@@ -64,7 +64,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return b.io.IORead(address)
 
 	case address >= HighRamStart && address <= HighRamEnd: // High RAM area
-		b.ram.readHighRam(address)
+		return b.ram.readHighRam(address)
 
 	case address == InterruptEnableRegister: // CPU enable register
 		return b.ieRegister
