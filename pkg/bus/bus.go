@@ -41,7 +41,8 @@ func (b *Bus) BusRead(address uint16) byte {
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
 		// TO-DO
-		b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to read", address)
+		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to read", address)
+		return 0
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		return b.Cartridge.CartRead(address)
@@ -83,7 +84,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
 		// TO-DO
-		b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to write", address)
+		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to write", address)
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		b.Cartridge.CartWrite(address, value)
