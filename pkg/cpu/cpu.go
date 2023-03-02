@@ -73,8 +73,8 @@ func (c *CPU) Step() bool {
 		c.logRegistersGameboyDoctor(instructionPC)
 		//c.logRegisterValues(instructionPC) // used for debugging purposes
 
-		// c.dbgUpdate() // Useful for debugging roms
-		// c.dbgPrint()
+		c.dbgUpdate() // Useful for debugging roms
+		c.dbgPrint()
 
 		// Fetch data
 		err := c.fetchData()
