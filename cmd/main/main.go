@@ -24,7 +24,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	cartridge.LogCartridgeHeaderInfo()
+	// cartridge.LogCartridgeHeaderInfo()
 
 	// Build memory bus
 	memoryBus := bus.NewBus(cartridge, logger)
