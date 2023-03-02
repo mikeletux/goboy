@@ -142,20 +142,20 @@ func (c *CPU) fetchData() error {
 
 		return nil
 
-	case amA8nR:
-		fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
-		if err != nil {
-			return err
-		}
+		/*	case amA8nR:
+			fetchedData, err := c.registers.FetchDataFromRegisters(c.CurrentInstruction.RegisterType2)
+			if err != nil {
+				return err
+			}
 
-		c.FetchedData = fetchedData
+			c.FetchedData = fetchedData
 
-		var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
-		c.DestinationIsMemory = true
-		c.emulateCpuCycles(1)
-		c.MemoryDestination = uint16(memoryAddress) | 0xFF00
+			var memoryAddress = c.bus.BusRead(c.registers.GetPCAndIncrement())
+			c.DestinationIsMemory = true
+			c.emulateCpuCycles(1)
+			c.MemoryDestination = uint16(memoryAddress) | 0xFF00
 
-		return nil
+			return nil*/
 
 	case amHLnSPR, amD8:
 		c.FetchedData = uint16(c.bus.BusRead(c.registers.GetPCAndIncrement()))
