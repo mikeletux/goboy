@@ -18,6 +18,16 @@ const (
 	initPCRegisterValue uint16 = 0x0100
 )
 
+const (
+	joypadIOAddr                uint16 = 0xFF00
+	serialTransferDataIOAddr    uint16 = 0xFF01
+	serialTransferControlIOAddr uint16 = 0xFF02
+
+	interruptFlagIOAddr uint16 = 0xFF0F
+
+	interruptEnableAddr uint16 = 0xFFFF
+)
+
 type CPU struct {
 	registers *Registers
 	bus       bus.DataBusInterface
@@ -32,7 +42,6 @@ type CPU struct {
 
 	EnableMasterInterruptions bool
 	EnablingIme               bool
-	InterruptionsRegister     byte
 
 	Halted   bool
 	Stepping bool
@@ -96,7 +105,7 @@ func (c *CPU) Step() bool {
 		// CPU is halted at this point
 		c.emulateCpuCycles(1)
 
-		if c.InterruptionsRegister != 0x0 {
+		if c.bus.BusRead16(interruptFlagIOAddr) != 0x0 {
 			c.Halted = false
 		}
 	}
