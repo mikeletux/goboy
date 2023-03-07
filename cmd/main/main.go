@@ -5,7 +5,10 @@ import (
 	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/cart"
 	"github.com/mikeletux/goboy/pkg/cpu"
+	"github.com/mikeletux/goboy/pkg/lcd"
 	"github.com/mikeletux/goboy/pkg/log"
+	"github.com/veandco/go-sdl2/sdl"
+	"sync"
 )
 
 func main() {
@@ -24,15 +27,40 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	// cartridge.LogCartridgeHeaderInfo()
-
 	// Build memory bus
 	memoryBus := bus.NewBus(cartridge, logger)
 
 	// Build CPU
 	gbCpu := cpu.Init(memoryBus, logger)
 
+	die := make(chan bool)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func(die <-chan bool) {
+		defer wg.Done()
+		for {
+			select {
+			case <-die:
+				return
+			default:
+				gbCpu.Step()
+			}
+		}
+	}(die)
+
+	// Build UI
+	gbScreen := lcd.NewGameboyScreen()
+
 	for {
-		gbCpu.Step()
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch event.(type) {
+			case *sdl.QuitEvent:
+				die <- true
+				wg.Wait()
+				gbScreen.DestroyWindow()
+				return
+			}
+		}
 	}
 }
