@@ -46,7 +46,7 @@ type CPU struct {
 	Halted   bool
 	Stepping bool
 
-	tick uint64
+	ticks uint64
 }
 
 func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
@@ -78,9 +78,10 @@ func (c *CPU) Step() bool {
 			c.logger.Fatalf("instruction with code %X doesn't exist", c.CurrentOperationCode)
 		}
 		c.CurrentInstruction = instruction
+		c.emulateCpuCycles(1)
 
 		c.logRegistersGameboyDoctor(instructionPC)
-		//c.logRegisterValues(instructionPC) // used for debugging purposes
+		// c.logRegisterValues(instructionPC) // used for debugging purposes
 
 		c.dbgUpdate() // Useful for debugging roms
 		c.dbgPrint()
@@ -99,19 +100,18 @@ func (c *CPU) Step() bool {
 		}
 
 		execFunc(c)
-		c.tick++
 
 	} else {
 		// CPU is halted at this point
 		c.emulateCpuCycles(1)
 
-		if c.bus.BusRead16(interruptFlagIOAddr) != 0x0 {
+		if c.bus.BusRead(interruptFlagIOAddr) != 0x0 {
 			c.Halted = false
 		}
 	}
 
 	if c.EnableMasterInterruptions {
-		// handle interrupt
+		c.handleInterruptions()
 		c.EnablingIme = false
 	}
 
@@ -122,6 +122,12 @@ func (c *CPU) Step() bool {
 	return true // Check this
 }
 
-func (c *CPU) emulateCpuCycles(numCycles int) { // TO BE IMPLEMENTED
+func (c *CPU) emulateCpuCycles(numCycles int) {
+	n := numCycles * 4
+
+	for i := 0; i < n; i++ {
+		c.ticks++
+		c.timerTick()
+	}
 	return
 }
