@@ -10,7 +10,10 @@ type DataBusInterface interface {
 	BusWrite(address uint16, value byte)
 	BusRead16(address uint16) uint16
 	BusWrite16(address uint16, value uint16)
-	// Probably I need a method to return the ieRegister
+
+	// Methods regarding Timer
+	IncrementTimerDiv() uint16 // Returns the Div value after increasing
+	GetTimerDiv() uint16
 }
 
 // Bus represents the whole Game boy bus
@@ -122,4 +125,13 @@ func (b *Bus) BusRead16(address uint16) uint16 {
 func (b *Bus) BusWrite16(address uint16, value uint16) {
 	b.BusWrite(address, byte(value&0xFF))        // Low
 	b.BusWrite(address+1, byte((value>>8)&0xFF)) // High
+}
+
+func (b *Bus) IncrementTimerDiv() uint16 {
+	b.io.timer.divReg++
+	return b.io.timer.divReg
+}
+
+func (b *Bus) GetTimerDiv() uint16 {
+	return b.io.timer.divReg
 }
