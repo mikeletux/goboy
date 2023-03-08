@@ -102,7 +102,7 @@ func ldExecFunc(c *CPU) {
 		c.registers.SetFH((reg2Value&0xF)+(c.FetchedData&0xF) >= 0x10)    // If lower 4 bits of result overflow, set H.
 		c.registers.SetFC((reg2Value&0xFF)+(c.FetchedData&0xFF) >= 0x100) // If upper 4 bits of result overflow, set C.
 
-		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, reg2Value+c.FetchedData)
+		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, reg2Value+uint16(int8(c.FetchedData)))
 		return
 	}
 
