@@ -215,6 +215,7 @@ func (c *CPU) fetchData() error {
 
 		c.FetchedData = uint16(c.bus.BusRead(memoryDestination))
 
+		c.emulateCpuCycles(1)
 		return nil
 
 	case amRnA16:
