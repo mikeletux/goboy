@@ -1,5 +1,4 @@
 package cpu
-import "C"
 
 func nopExecFunc(c *CPU) {
 	return
@@ -66,6 +65,8 @@ func pushExecFunc(c *CPU) {
 	c.emulateCpuCycles(1)
 	c.stackPush(byte(value) & 0xFF) // Push the least significant byte
 	c.emulateCpuCycles(1)
+
+	c.emulateCpuCycles(1)
 }
 
 func diExecFunc(c *CPU) {
@@ -80,10 +81,13 @@ func ldExecFunc(c *CPU) {
 	if c.DestinationIsMemory {
 		// We need to write in memory
 		if is16BitRegister(c.CurrentInstruction.RegisterType2) { // This means we need to write twice in memory.
+			c.emulateCpuCycles(1)
 			c.bus.BusWrite16(c.MemoryDestination, c.FetchedData)
 		} else {
 			c.bus.BusWrite(c.MemoryDestination, byte(c.FetchedData))
 		}
+
+		c.emulateCpuCycles(1)
 		return
 	}
 
@@ -99,6 +103,7 @@ func ldExecFunc(c *CPU) {
 		c.registers.SetFC((reg2Value&0xFF)+(c.FetchedData&0xFF) >= 0x100) // If upper 4 bits of result overflow, set C.
 
 		c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, reg2Value+c.FetchedData)
+		return
 	}
 
 	c.registers.SetDataToRegisters(c.CurrentInstruction.RegisterType1, c.FetchedData) // Normal case.
@@ -224,7 +229,7 @@ func adcExecFunc(c *CPU) {
 		c.logger.Fatal(err)
 	}
 
-	var result,carry uint16
+	var result, carry uint16
 	if c.registers.GetFC() {
 		carry = 1
 	}
@@ -232,9 +237,9 @@ func adcExecFunc(c *CPU) {
 	result = regAValue + c.FetchedData + carry
 	c.registers.A = byte(result & 0xFF)
 
-	c.registers.SetFZ(result & 0xFF == 0)
+	c.registers.SetFZ(result&0xFF == 0)
 	c.registers.SetFN(false)
-	c.registers.SetFH(regAValue & 0xF + c.FetchedData & 0xF + carry >= 0x10)
+	c.registers.SetFH(regAValue&0xF+c.FetchedData&0xF+carry >= 0x10)
 	c.registers.SetFC(result >= 0x100)
 }
 
@@ -244,12 +249,12 @@ func subExecFunc(c *CPU) {
 		c.logger.Fatal(err)
 	}
 
-	c.registers.A = byte(regAValue & 0xFF - c.FetchedData & 0xFF)
+	c.registers.A = byte(regAValue&0xFF - c.FetchedData&0xFF)
 
-	c.registers.SetFZ(regAValue & 0xFF - c.FetchedData & 0xFF == 0)
+	c.registers.SetFZ(regAValue&0xFF-c.FetchedData&0xFF == 0)
 	c.registers.SetFN(true)
-	c.registers.SetFH(int(regAValue & 0xF) - int(c.FetchedData & 0xF) < 0)
-	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) < 0)
+	c.registers.SetFH(int(regAValue&0xF)-int(c.FetchedData&0xF) < 0)
+	c.registers.SetFC(int(regAValue&0xFF)-int(c.FetchedData&0xFF) < 0)
 }
 
 func sbcExecFunc(c *CPU) {
@@ -263,12 +268,12 @@ func sbcExecFunc(c *CPU) {
 		carry = 1
 	}
 
-	c.registers.A = byte(regAValue & 0xFF - c.FetchedData & 0xFF - carry)
+	c.registers.A = byte(regAValue&0xFF - c.FetchedData&0xFF - carry)
 
-	c.registers.SetFZ(regAValue & 0xFF - c.FetchedData & 0xFF - carry == 0)
+	c.registers.SetFZ(regAValue&0xFF-c.FetchedData&0xFF-carry == 0)
 	c.registers.SetFN(true)
-	c.registers.SetFH(int(regAValue & 0xF) - int(c.FetchedData & 0xF) - int(carry) < 0)
-	c.registers.SetFC(int(regAValue & 0xFF) - int(c.FetchedData & 0xFF) - int(carry) < 0)
+	c.registers.SetFH(int(regAValue&0xF)-int(c.FetchedData&0xF)-int(carry) < 0)
+	c.registers.SetFC(int(regAValue&0xFF)-int(c.FetchedData&0xFF)-int(carry) < 0)
 }
 
 func andExecFunc(c *CPU) {
@@ -297,17 +302,17 @@ func orExecFunc(c *CPU) {
 	c.registers.SetFC(false)
 }
 func cpExecFunc(c *CPU) {
-	c.registers.SetFZ(c.registers.A - byte(c.FetchedData) == 0)
+	c.registers.SetFZ(c.registers.A-byte(c.FetchedData) == 0)
 	c.registers.SetFN(true)
-	c.registers.SetFH(int(c.registers.A & 0xF) - int(c.FetchedData & 0xF) < 0)
-	c.registers.SetFC(int(c.registers.A & 0xFF) - int(c.FetchedData & 0xFF) < 0)
+	c.registers.SetFH(int(c.registers.A&0xF)-int(c.FetchedData&0xF) < 0)
+	c.registers.SetFC(int(c.registers.A&0xFF)-int(c.FetchedData&0xFF) < 0)
 }
 
 func cbExecFunc(c *CPU) {
 	cbOperation := byte(c.FetchedData & 0xFF)
 	registerType := decodePrefixCBRegister(cbOperation)
-	bit := (cbOperation>>3) & 0b111
-	bitOperation := (cbOperation>>6) & 0b11
+	bit := (cbOperation >> 3) & 0b111
+	bitOperation := (cbOperation >> 6) & 0b11
 	registerValue := c.fetchRegisterPrefixCB(registerType)
 
 	c.emulateCpuCycles(1)
@@ -318,7 +323,7 @@ func cbExecFunc(c *CPU) {
 
 	switch bitOperation {
 	case 1: // BIT
-		c.registers.SetFZ((registerValue & (1<<bit)) != (1<<bit))
+		c.registers.SetFZ((registerValue & (1 << bit)) != (1 << bit))
 		c.registers.SetFN(false)
 		c.registers.SetFH(true)
 		return
@@ -337,7 +342,7 @@ func cbExecFunc(c *CPU) {
 		setC := false
 		result := (registerValue << 1) & 0xFF
 
-		if registerValue & (1<<7) != 0 {
+		if registerValue&(1<<7) != 0 {
 			result |= 1
 			setC = true
 		}
@@ -353,13 +358,13 @@ func cbExecFunc(c *CPU) {
 	case 1: // RRC
 		old := registerValue
 		registerValue >>= 1
-		registerValue |= old<<7
+		registerValue |= old << 7
 
 		c.setRegisterPrefixCB(registerType, registerValue)
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(old & 1 == 1)
+		c.registers.SetFC(old&1 == 1)
 
 		return
 	case 2: // RL
@@ -373,33 +378,32 @@ func cbExecFunc(c *CPU) {
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(old & 0x80 == 0x80)
+		c.registers.SetFC(old&0x80 == 0x80)
 
 		return
 	case 3: // RR
 		old := registerValue
 		registerValue >>= 1
 		if c.registers.GetFC() {
-			registerValue |= 1<<7
+			registerValue |= 1 << 7
 		}
 
 		c.setRegisterPrefixCB(registerType, registerValue)
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(old & 0x1 == 0x1)
+		c.registers.SetFC(old&0x1 == 0x1)
 
 		return
 	case 4: // SLA
 		old := registerValue
 		registerValue <<= 1
 
-
 		c.setRegisterPrefixCB(registerType, registerValue)
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(old & 0x80 == 0x80)
+		c.registers.SetFC(old&0x80 == 0x80)
 
 		return
 	case 5: // SRA (arithmetic shift to the right)
@@ -408,11 +412,11 @@ func cbExecFunc(c *CPU) {
 		c.registers.SetFZ(u == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(registerValue & 0x1 == 0x1)
+		c.registers.SetFC(registerValue&0x1 == 0x1)
 
 		return
 	case 6: // SWAP (swap high nibble with low nibble)
-		registerValue = (registerValue & 0xF0)>>4 | (registerValue & 0xF)<<4
+		registerValue = (registerValue&0xF0)>>4 | (registerValue&0xF)<<4
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
@@ -427,7 +431,7 @@ func cbExecFunc(c *CPU) {
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
-		c.registers.SetFC(old & 0x1 == 0x1)
+		c.registers.SetFC(old&0x1 == 0x1)
 
 		return
 	}
@@ -435,10 +439,10 @@ func cbExecFunc(c *CPU) {
 	c.logger.Fatalf("Invalid CB %X", cbOperation)
 }
 
-func rlcaExecFunc(c *CPU){
+func rlcaExecFunc(c *CPU) {
 	u := c.registers.A
 	var carry byte
-	if u >> 7 == 0x1 {
+	if u>>7 == 0x1 {
 		carry = 0x1
 	}
 
@@ -450,10 +454,10 @@ func rlcaExecFunc(c *CPU){
 	c.registers.SetFC(carry == 0x1)
 }
 
-func rrcaExecFunc(c *CPU){
+func rrcaExecFunc(c *CPU) {
 	b := c.registers.A & 0x1
 	c.registers.A >>= 1
-	c.registers.A |= b<<7
+	c.registers.A |= b << 7
 
 	c.registers.SetFZ(false)
 	c.registers.SetFN(false)
@@ -461,7 +465,7 @@ func rrcaExecFunc(c *CPU){
 	c.registers.SetFC(b == 0x1)
 }
 
-func rlaExecFunc(c *CPU){
+func rlaExecFunc(c *CPU) {
 	u := c.registers.A
 	var carryFlag byte
 	if c.registers.GetFC() {
@@ -470,14 +474,14 @@ func rlaExecFunc(c *CPU){
 
 	carry := (u >> 7) & 0x1
 
-	c.registers.A = (u<<1) | carryFlag
+	c.registers.A = (u << 1) | carryFlag
 	c.registers.SetFZ(false)
 	c.registers.SetFN(false)
 	c.registers.SetFH(false)
 	c.registers.SetFC(carry == 0x1)
 }
 
-func rraExecFunc(c *CPU){
+func rraExecFunc(c *CPU) {
 	var carry byte
 	if c.registers.GetFC() {
 		carry = 0x1 << 7
@@ -501,7 +505,7 @@ func daaExecFunc(c *CPU) {
 	u := byte(0)
 	fc := 0
 
-	if c.registers.GetFH() || (!c.registers.GetFN() && (c.registers.A & 0xF) > 9) {
+	if c.registers.GetFH() || (!c.registers.GetFN() && (c.registers.A&0xF) > 9) {
 		u = 6
 	}
 
