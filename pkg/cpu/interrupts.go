@@ -21,15 +21,15 @@ func (c *CPU) pushPCToStack(address uint16) {
 	c.registers.PC = address
 }
 
-func (c *CPU) interruptCheck(address uint16, interruptType byte) bool {
+func (c *CPU) interruptCheck(addressToJump uint16, interruptType byte) bool {
 	ieRegister := c.bus.BusRead(interruptEnableAddr)
 	ifRegister := c.bus.BusRead(interruptFlagIOAddr)
 
 	if ifRegister&interruptType == interruptType &&
 		ieRegister&interruptType == interruptType {
 
-		c.pushPCToStack(address)
-		c.bus.BusWrite(address, ifRegister & ^interruptType)
+		c.pushPCToStack(addressToJump)
+		c.bus.BusWrite(interruptFlagIOAddr, ifRegister & ^interruptType)
 		c.Halted = false
 
 		return true
@@ -45,4 +45,9 @@ func (c *CPU) handleInterruptions() {
 	} else if c.interruptCheck(serialInterruptAddr, serialInterruptFlag) {
 	} else if c.interruptCheck(joypadInterruptAddr, joypadInterruptFlag) {
 	}
+}
+
+func (c *CPU) requestInterrupt(interruptType byte) {
+	interrupts := c.bus.BusRead(interruptFlagIOAddr)
+	c.bus.BusWrite(interruptFlagIOAddr, interrupts|interruptType)
 }
