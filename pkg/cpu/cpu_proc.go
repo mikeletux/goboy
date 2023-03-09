@@ -417,6 +417,7 @@ func cbExecFunc(c *CPU) {
 		return
 	case 6: // SWAP (swap high nibble with low nibble)
 		registerValue = (registerValue&0xF0)>>4 | (registerValue&0xF)<<4
+		c.setRegisterPrefixCB(registerType, registerValue)
 		c.registers.SetFZ(registerValue == 0)
 		c.registers.SetFN(false)
 		c.registers.SetFH(false)
