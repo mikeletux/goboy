@@ -58,7 +58,7 @@ func (c *CPU) fetchData() error {
 			return err
 		}
 
-		if c.CurrentInstruction.RegisterType1 == rtC {
+		if c.CurrentInstruction.RegisterType2 == rtC {
 			memoryAddress |= 0xFF00
 		}
 
