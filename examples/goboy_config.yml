@@ -3,7 +3,5 @@
 rom_path: /home/mikeletux/roms/tetris.gb
 # `log_stdout_enable` defines if stdout logging is enabled or not
 log_stdout_enable: true
-# `log_truncate` defines if for every rom execution the log file is started from scratch
-log_truncate: true
 # `log_file_path` sets where the log file is going to be placed
 log_file_path: /var/log/goboy/goboy.log

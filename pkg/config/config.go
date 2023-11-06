@@ -14,7 +14,6 @@ const defaultConfigFilePath string = "/etc/goboy_config.yml"
 type Config struct {
 	RomPath         string `yaml:"rom_path"`
 	LogStdoutEnable bool   `yaml:"log_stdout_enable"`
-	LogTruncate     bool   `yaml:"log_truncate"`
 	LogFilePath     string `yaml:"log_file_path"`
 }
 
