@@ -1,28 +1,31 @@
 package main
 
 import (
+	"errors"
 	"flag"
+	"fmt"
 	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/cart"
+	"github.com/mikeletux/goboy/pkg/config"
 	"github.com/mikeletux/goboy/pkg/cpu"
 	"github.com/mikeletux/goboy/pkg/lcd"
 	"github.com/mikeletux/goboy/pkg/log"
 	"github.com/veandco/go-sdl2/sdl"
+	"os"
 	"sync"
 )
 
 func main() {
-	romCartridgePath := flag.String("romPath", "", "Path to the Gameboy rom to load")
-	flag.Parse()
+	configValues := configureEmulator()
 
 	// Build stdout logger
-	logger, err := log.NewBuiltinStdoutLogger(true, "/home/mikeletux/development/goboy/log/goboy.log")
+	logger, err := log.NewBuiltinStdoutLogger(configValues.LogStdoutEnable, configValues.LogFileEnable, configValues.LogFilePath) // Add truncate!!! TO-DO
 	if err != nil {
 		panic(err)
 	}
 
 	// Build cartridge
-	cartridge, err := cart.NewCartridge(*romCartridgePath, logger)
+	cartridge, err := cart.NewCartridge(configValues.RomPath, logger)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -63,4 +66,46 @@ func main() {
 			}
 		}
 	}
+}
+
+func configureEmulator() *config.Config {
+	configFilePath := flag.String("configFilePath", "", "Path to the GoBoy config path")
+	flag.Parse()
+
+	configParser, err := config.NewConfigParser(*configFilePath)
+	if err != nil {
+		var confNotFoundErr *config.ConfigurationFileNotFound
+		if errors.As(err, &confNotFoundErr) {
+			fmt.Printf("%s", confNotFoundErr) // probably in the future show a window?
+			os.Exit(-1)
+		} else {
+			panic(err)
+		}
+	}
+
+	configValues, err := configParser.Parse()
+	if err != nil {
+		var parseInfoErr *config.ParsingError
+		var missingConfigValuesErr *config.MissingConfigValuesError
+		var romNotFoundErr *config.RomNotFoundError
+		var dirWriteErr *config.LogWriteError
+
+		if errors.As(err, &parseInfoErr) {
+			fmt.Printf("%s", parseInfoErr) // probably in the future show a window?
+			os.Exit(-1)
+		} else if errors.As(err, &missingConfigValuesErr) {
+			fmt.Printf("%s", missingConfigValuesErr) // probably in the future show a window?
+			os.Exit(-1)
+		} else if errors.As(err, &romNotFoundErr) {
+			fmt.Printf("%s", romNotFoundErr) // probably in the future show a window?
+			os.Exit(-1)
+		} else if errors.As(err, &dirWriteErr) {
+			fmt.Printf("%s", dirWriteErr)
+			os.Exit(-1)
+		} else {
+			panic(err)
+		}
+	}
+
+	return configValues
 }
