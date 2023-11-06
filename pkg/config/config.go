@@ -1,8 +1,10 @@
 package config
 
 import (
+	"golang.org/x/sys/unix"
 	"gopkg.in/yaml.v3"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -47,25 +49,26 @@ type Parser struct {
 }
 
 func (c *Config) checkLogPathIsWritable() bool {
-	info, err := os.Stat(c.LogFilePath)
+	_, err := os.Stat(filepath.Dir(c.LogFilePath))
 	if err != nil {
 		return false
 	}
 
-	return info.Mode().Perm()&os.FileMode(0200) != 0
+	return unix.Access(filepath.Dir(c.LogFilePath), unix.W_OK) == nil
 }
 
-func NewConfigParser(configPath string) (*Parser, error) {
+func NewConfigParser(configPathIn string) (*Parser, error) {
+	configPath := configPathIn
 	if len(configPath) == 0 {
 		configPath = defaultConfigFilePath
 	}
 
 	_, err := os.Stat(configPath)
 	if os.IsNotExist(err) {
-		return nil, ConfigurationFileNotFound{err.Error()}
+		return nil, &ConfigurationFileNotFound{configPath}
 	}
 
-	return &Parser{defaultConfigFilePath}, nil
+	return &Parser{configPath}, nil
 }
 
 func (p Parser) Parse() (*Config, error) {
@@ -74,23 +77,23 @@ func (p Parser) Parse() (*Config, error) {
 		return nil, err
 	}
 
-	var configStruct *Config
+	configStruct := &Config{}
 	err = yaml.Unmarshal(bytes, configStruct)
 	if err != nil {
-		return nil, ParsingError{err.Error()}
+		return nil, &ParsingError{p.configFilePath}
 	}
 
 	checkConfigParameters, missingParameters := configStruct.checkEssentialValues()
 	if !checkConfigParameters {
-		return nil, MissingConfigValues{missingParameters}
+		return nil, &MissingConfigValuesError{missingParameters}
 	}
 
 	if !configStruct.checkRomExist() {
-		return nil, RomNotFoundError{configStruct.RomPath}
+		return nil, &RomNotFoundError{configStruct.RomPath}
 	}
 
 	if !configStruct.checkLogPathIsWritable() {
-		return nil, LogWriteError{configStruct.LogFilePath}
+		return nil, &LogWriteError{configStruct.LogFilePath}
 	}
 
 	return configStruct, nil
