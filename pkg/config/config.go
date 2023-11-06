@@ -6,12 +6,14 @@ import (
 	"strings"
 )
 
-const defaultConfigFilePath string = "/etc/goboy.cfg"
+const defaultConfigFilePath string = "/etc/goboy_config.yml"
 
 // Config is a struct that will hold all GoBoy configuration
 type Config struct {
-	RomPath     string `yaml:"rom_path"`
-	LogFilePath string `yaml:"log_file_path"`
+	RomPath         string `yaml:"rom_path"`
+	LogStdoutEnable bool   `yaml:"log_stdout_enable"`
+	LogTruncate     bool   `yaml:"log_truncate"`
+	LogFilePath     string `yaml:"log_file_path"`
 }
 
 func (c *Config) checkEssentialValues() (bool, string) {
