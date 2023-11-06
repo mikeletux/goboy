@@ -23,18 +23,18 @@ type BuiltinLogger struct {
 }
 
 // NewBuiltinStdoutLogger returns a simple BuiltinLogger that only logs on stdout.
-func NewBuiltinStdoutLogger(logStdout bool, logPath string) (*BuiltinLogger, error) {
+func NewBuiltinStdoutLogger(logStdout bool, logFileEnable bool, logPath string) (*BuiltinLogger, error) {
 	var noLog bool
 	var logFile *os.File
 	var writer io.Writer
 
 	switch {
-	case !logStdout && len(logPath) == 0:
+	case !logStdout && !logFileEnable:
 		noLog = true
 		writer = os.Stdout
 		break
 
-	case logStdout && len(logPath) > 0:
+	case logStdout && logFileEnable && len(logPath) > 0:
 		logFile, err := openFile(logPath)
 		if err != nil {
 			return nil, err
@@ -46,7 +46,7 @@ func NewBuiltinStdoutLogger(logStdout bool, logPath string) (*BuiltinLogger, err
 		writer = os.Stdout
 		break
 
-	case len(logPath) > 0:
+	case logFileEnable && len(logPath) > 0:
 		logFile, err := openFile(logPath)
 		if err != nil {
 			return nil, err
