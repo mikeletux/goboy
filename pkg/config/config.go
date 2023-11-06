@@ -14,6 +14,7 @@ const defaultConfigFilePath string = "/etc/goboy_config.yml"
 type Config struct {
 	RomPath         string `yaml:"rom_path"`
 	LogStdoutEnable bool   `yaml:"log_stdout_enable"`
+	LogFileEnable   bool   `yaml:"log_file_enable"`
 	LogFilePath     string `yaml:"log_file_path"`
 }
 
@@ -23,7 +24,7 @@ func (c *Config) checkEssentialValues() (bool, string) {
 		missingValues = append(missingValues, "rom_path")
 	}
 
-	if len(c.LogFilePath) == 0 {
+	if c.LogFileEnable && len(c.LogFilePath) == 0 {
 		missingValues = append(missingValues, "log_file_path")
 	}
 
@@ -91,7 +92,7 @@ func (p Parser) Parse() (*Config, error) {
 		return nil, &RomNotFoundError{configStruct.RomPath}
 	}
 
-	if !configStruct.checkLogPathIsWritable() {
+	if configStruct.LogFileEnable && !configStruct.checkLogPathIsWritable() {
 		return nil, &LogWriteError{configStruct.LogFilePath}
 	}
 
