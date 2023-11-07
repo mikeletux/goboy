@@ -10,9 +10,9 @@ import (
 	"github.com/mikeletux/goboy/pkg/cpu"
 	"github.com/mikeletux/goboy/pkg/lcd"
 	"github.com/mikeletux/goboy/pkg/log"
-	"github.com/veandco/go-sdl2/sdl"
 	"os"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -53,18 +53,11 @@ func main() {
 	}(die)
 
 	// Build UI
-	gbScreen := lcd.NewGameboyScreen()
+	gbScreen := lcd.NewGameboyScreen(logger, memoryBus)
 
 	for {
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent:
-				die <- true
-				wg.Wait()
-				gbScreen.DestroyWindow()
-				return
-			}
-		}
+		time.Sleep(1000 * time.Microsecond)
+		gbScreen.UpdateUI()
 	}
 }
 

@@ -3,6 +3,7 @@ package bus
 import (
 	"github.com/mikeletux/goboy/pkg/cart"
 	"github.com/mikeletux/goboy/pkg/log"
+	"time"
 )
 
 type DataBusInterface interface {
@@ -14,6 +15,9 @@ type DataBusInterface interface {
 	// Methods regarding Timer
 	IncrementTimerDiv() uint16 // Returns the Div value after increasing
 	GetTimerDiv() uint16
+
+	// Methods regarding DMA
+	DmaTick()
 }
 
 // Bus represents the whole Game boy bus
@@ -21,18 +25,27 @@ type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
 	Cartridge  cart.CartridgeInterface
 	logger     log.Logger
+	vram       *VRam
 	ram        *Ram
+	oam        *Oam
 	io         *io
 	ieRegister byte
+
+	dma *Dma
 }
 
 // NewBus initializes a bus given a type that implements the cart.CartridgeInterface interface.
 func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
+	dma := initDma()
+
 	return &Bus{
 		Cartridge: cartridge,
 		logger:    logger,
+		vram:      NewVRam(logger),
 		ram:       NewRam(logger),
-		io:        NewIO(logger),
+		oam:       NewOam(logger),
+		io:        NewIO(logger, dma),
+		dma:       dma,
 	}
 }
 
@@ -43,9 +56,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return b.Cartridge.CartRead(address)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
-		// TO-DO
-		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to read", address)
-		return 0
+		return b.vram.readVRam(address)
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		return b.Cartridge.CartRead(address)
@@ -56,9 +67,11 @@ func (b *Bus) BusRead(address uint16) byte {
 	case address >= EchoRamStart && address <= EchoRamEnd: // Reserved echo RAM area
 		return 0x0
 
-	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
-		// TO-DO
-		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to read", address)
+	case address >= OamStart && address <= OamEnd: // Sprite attribute table area OAM
+		if b.dma.isTransferring() {
+			return 0xFF
+		}
+		return b.oam.readOam(address)
 
 	case address >= NintendoNotUsableMemoryStart && address <= NintendoNotUsableMemoryEnd: // Not usable area
 		return 0x0
@@ -86,8 +99,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 		b.Cartridge.CartWrite(address, value)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
-		// TO-DO
-		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to write", address)
+		b.vram.writeVRam(address, value)
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		b.Cartridge.CartWrite(address, value)
@@ -95,9 +107,14 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 	case address >= WorkRam0Start && address <= WorkRam1End: // Working RAM area
 		b.ram.writeWorkingRam(address, value)
 
-	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
-		// TO-DO
-		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to write", address)
+	case address >= OamStart && address <= OamEnd: // Sprite attribute table area OAM
+		if b.dma.isTransferring() {
+			return
+		}
+		b.oam.writeOam(address, value)
+
+	case address >= NintendoNotUsableMemoryStart && address <= NintendoNotUsableMemoryEnd: // Not usable area
+		return
 
 	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
 		b.io.IOWrite(address, value)
@@ -134,4 +151,24 @@ func (b *Bus) IncrementTimerDiv() uint16 {
 
 func (b *Bus) GetTimerDiv() uint16 {
 	return b.io.timer.divReg
+}
+
+func (b *Bus) DmaTick() {
+	if !b.dma.active {
+		return
+	}
+
+	if b.dma.startDelay > 0 {
+		b.dma.startDelay--
+		return
+	}
+
+	b.BusWrite(OamStart+uint16(b.dma.byte), b.BusRead(uint16(b.dma.value)*0x100+uint16(b.dma.byte)))
+	b.dma.byte++
+	b.dma.active = b.dma.byte < 0xA0
+
+	if !b.dma.active {
+		b.logger.Debugf("DMA DONE!!!!!")
+		time.Sleep(2 * time.Second) // HACK
+	}
 }

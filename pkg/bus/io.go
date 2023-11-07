@@ -1,6 +1,8 @@
 package bus
 
-import "github.com/mikeletux/goboy/pkg/log"
+import (
+	"github.com/mikeletux/goboy/pkg/log"
+)
 
 // Register addresses
 const (
@@ -13,6 +15,7 @@ const (
 	tacRegisterAddr  uint16 = 0xFF07
 
 	interruptFlagRegisterAddr uint16 = 0xFF0F
+	oamDmaRegisterAddr        uint16 = 0xFF46
 )
 
 const (
@@ -32,20 +35,22 @@ type serial struct {
 }
 
 type io struct {
-	logger log.Logger
-	// ioRegisters [IORegistersEnd - IORegistersStart + 1]byte
 	serial *serial
 	timer  *timer
 	ifReg  byte // Interrupt Flag FF0F
+	ly     byte // HACK - REMOVE IT LATER
+	dma    *Dma
+	logger log.Logger
 }
 
-func NewIO(logger log.Logger) *io {
+func NewIO(logger log.Logger, dma *Dma) *io {
 	io := &io{
 		logger: logger,
 		serial: &serial{},
 		timer: &timer{
 			divReg: initialDivRegisterValue,
 		},
+		dma: dma,
 	}
 
 	return io
@@ -53,7 +58,8 @@ func NewIO(logger log.Logger) *io {
 
 func (i *io) IORead(address uint16) byte {
 	if address == 0xFF44 {
-		return 0x90 // Hardcoded value for Gameboy doctor
+		i.ly++
+		return i.ly // HACK
 	}
 
 	switch address { // This switch is for special cases (Like 16bit Timer DIV register)
@@ -74,8 +80,6 @@ func (i *io) IORead(address uint16) byte {
 	default:
 		return 0x0
 	}
-
-	// return i.ioRegisters[address-IORegistersStart]
 }
 
 func (i *io) IOWrite(address uint16, data byte) {
@@ -94,7 +98,8 @@ func (i *io) IOWrite(address uint16, data byte) {
 		i.timer.tacReg = data
 	case interruptFlagRegisterAddr:
 		i.ifReg = data
+	case oamDmaRegisterAddr:
+		i.dma.start(data)
+		i.logger.Debugf("DMA STARTED\n")
 	}
-
-	// i.ioRegisters[address-IORegistersStart] = data
 }
