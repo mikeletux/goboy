@@ -21,7 +21,9 @@ type Bus struct {
 	// Cartridge represents the Gameboy game cartridge. It has functions to read and write its memory.
 	Cartridge  cart.CartridgeInterface
 	logger     log.Logger
+	vram       *VRam
 	ram        *Ram
+	oam        *Oam
 	io         *io
 	ieRegister byte
 }
@@ -31,7 +33,9 @@ func NewBus(cartridge cart.CartridgeInterface, logger log.Logger) *Bus {
 	return &Bus{
 		Cartridge: cartridge,
 		logger:    logger,
+		vram:      NewVRam(logger),
 		ram:       NewRam(logger),
+		oam:       NewOam(logger),
 		io:        NewIO(logger),
 	}
 }
@@ -43,9 +47,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return b.Cartridge.CartRead(address)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
-		// TO-DO
-		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to read", address)
-		return 0
+		return b.vram.readVRam(address)
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		return b.Cartridge.CartRead(address)
@@ -57,8 +59,7 @@ func (b *Bus) BusRead(address uint16) byte {
 		return 0x0
 
 	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
-		// TO-DO
-		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to read", address)
+		return b.oam.readOam(address)
 
 	case address >= NintendoNotUsableMemoryStart && address <= NintendoNotUsableMemoryEnd: // Not usable area
 		return 0x0
@@ -86,8 +87,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 		b.Cartridge.CartWrite(address, value)
 
 	case address >= VramStart && address <= VramEnd: // VRAM area
-		// TO-DO
-		//b.logger.Fatalf("VRAM area bus address 0x%X yet not implemented to write", address)
+		b.vram.writeVRam(address, value)
 
 	case address >= ExternalRamFromCartridgeStart && address <= ExternalRamFromCartridgeEnd: // Cartridge RAM area
 		b.Cartridge.CartWrite(address, value)
@@ -96,8 +96,7 @@ func (b *Bus) BusWrite(address uint16, value byte) {
 		b.ram.writeWorkingRam(address, value)
 
 	case address >= OamStart && address <= OamEnd: // Sprite attribute table area
-		// TO-DO
-		b.logger.Fatalf("OAM area bus address 0x%X yet not implemented to write", address)
+		b.oam.writeOam(address, value)
 
 	case address >= IORegistersStart && address <= IORegistersEnd: // IO Registers area
 		b.io.IOWrite(address, value)
