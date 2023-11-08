@@ -31,7 +31,6 @@ const (
 type CPU struct {
 	registers *Registers
 	bus       bus.DataBusInterface
-	logger    log.Logger
 
 	// Current fetch
 	FetchedData          uint16
@@ -47,6 +46,8 @@ type CPU struct {
 	Stepping bool
 
 	ticks uint64
+
+	logger log.Logger
 }
 
 func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
@@ -123,11 +124,12 @@ func (c *CPU) Step() bool {
 }
 
 func (c *CPU) emulateCpuCycles(numCycles int) {
-	n := numCycles * 4
+	for i := 0; i < numCycles; i++ {
+		for j := 0; j < 4; j++ {
+			c.ticks++
+			c.timerTick()
+		}
 
-	for i := 0; i < n; i++ {
-		c.ticks++
-		c.timerTick()
+		c.bus.DmaTick()
 	}
-	return
 }
