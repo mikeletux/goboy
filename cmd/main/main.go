@@ -9,6 +9,7 @@ import (
 	"github.com/mikeletux/goboy/pkg/config"
 	"github.com/mikeletux/goboy/pkg/cpu"
 	"github.com/mikeletux/goboy/pkg/log"
+	"github.com/mikeletux/goboy/pkg/ppu"
 	"github.com/mikeletux/goboy/pkg/ui"
 	"os"
 	"sync"
@@ -33,8 +34,17 @@ func main() {
 	// Build memory bus
 	memoryBus := bus.NewBus(cartridge, logger)
 
+	// Build UI
+	gbScreen := ui.NewGameboyScreen(memoryBus, logger)
+
+	// Build LCD
+	gbLcd := ppu.InitLcd(memoryBus, gbScreen, logger)
+
+	// Build PPU
+	gbPPU := ppu.InitPPU(memoryBus, gbLcd, logger)
+
 	// Build CPU
-	gbCpu := cpu.Init(memoryBus, logger)
+	gbCPU := cpu.Init(memoryBus, gbPPU, logger)
 
 	die := make(chan bool)
 	var wg sync.WaitGroup
@@ -47,13 +57,10 @@ func main() {
 			case <-die:
 				return
 			default:
-				gbCpu.Step()
+				gbCPU.Step()
 			}
 		}
 	}(die)
-
-	// Build UI
-	gbScreen := ui.NewGameboyScreen(logger, memoryBus)
 
 	for {
 		time.Sleep(1000 * time.Microsecond)

@@ -3,6 +3,7 @@ package cpu
 import (
 	"github.com/mikeletux/goboy/pkg/bus"
 	"github.com/mikeletux/goboy/pkg/log"
+	"github.com/mikeletux/goboy/pkg/ppu"
 )
 
 const (
@@ -27,6 +28,7 @@ const (
 type CPU struct {
 	registers *Registers
 	bus       bus.DataBusInterface
+	ppu       *ppu.PPU
 
 	// Current fetch
 	FetchedData          uint16
@@ -46,7 +48,8 @@ type CPU struct {
 	logger log.Logger
 }
 
-func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
+// MAKE PPU AT SOME POINT INTERFACE
+func Init(bus bus.DataBusInterface, ppu *ppu.PPU, logger log.Logger) *CPU {
 	return &CPU{
 		registers: &Registers{
 			A:  initARegisterValue,
@@ -61,6 +64,7 @@ func Init(bus bus.DataBusInterface, logger log.Logger) *CPU {
 			PC: initPCRegisterValue,
 		},
 		bus:    bus,
+		ppu:    ppu,
 		logger: logger,
 	}
 }

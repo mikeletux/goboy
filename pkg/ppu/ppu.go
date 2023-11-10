@@ -7,12 +7,14 @@ import (
 
 type PPU struct {
 	bus    bus.DataBusInterface
+	lcd    *Lcd
 	logger log.Logger
 }
 
-func Init(bus bus.DataBusInterface, logger log.Logger) *PPU {
+func InitPPU(bus bus.DataBusInterface, lcd *Lcd, logger log.Logger) *PPU {
 	return &PPU{
 		bus:    bus,
+		lcd:    lcd,
 		logger: logger,
 	}
 }

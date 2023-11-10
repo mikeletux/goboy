@@ -17,7 +17,7 @@ type UI struct {
 	debugWindow *GameboyDebugWindow
 }
 
-func NewGameboyScreen(logger log.Logger, bus bus.DataBusInterface) *UI {
+func NewGameboyScreen(bus bus.DataBusInterface, logger log.Logger) *UI {
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
 		panic(err)
 	}
