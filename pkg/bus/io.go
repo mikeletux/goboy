@@ -14,8 +14,20 @@ const (
 	tmaRegisterAddr  uint16 = 0xFF06
 	tacRegisterAddr  uint16 = 0xFF07
 
+	LcdControlRegisterAddr uint16 = 0xFF40
+	LcdStatusRegisterAddr  uint16 = 0xFF41
+	ScyRegisterAddr        uint16 = 0xFF42
+	ScxRegisterAddr        uint16 = 0xFF43
+	LyRegisterAddr         uint16 = 0xFF44
+	LyCompareRegisterAddr  uint16 = 0xFF45
+	OamDmaRegisterAddr     uint16 = 0xFF46
+	BgPaletteRegisterAddr  uint16 = 0xFF47
+	Obp0RegisterAddr       uint16 = 0xFF48
+	Obp1RegisterAddr       uint16 = 0xFF49
+	WinYRegisterAddr       uint16 = 0xFF4A
+	WinXRegisterAddr       uint16 = 0xFF4B
+
 	interruptFlagRegisterAddr uint16 = 0xFF0F
-	oamDmaRegisterAddr        uint16 = 0xFF46
 )
 
 const (
@@ -34,12 +46,28 @@ type serial struct {
 	serialTransferControl byte // FF02
 }
 
+type Lcd struct {
+	lcdc      byte // FF40 - LCD Control
+	lcds      byte // FF41 - LCD Status
+	scrollY   byte // FF42
+	scrollX   byte // FF43
+	ly        byte // FF44
+	lyCompare byte // FF45
+	dma       byte // FF46
+	bgPalette byte // FF47
+	obp0      byte // FF48
+	obp1      byte // FF49
+	winY      byte // FF4A
+	winX      byte // FF4B
+}
+
 type io struct {
 	serial *serial
 	timer  *timer
 	ifReg  byte // Interrupt Flag FF0F
 	ly     byte // HACK - REMOVE IT LATER
 	dma    *Dma
+	lcd    *Lcd
 	logger log.Logger
 }
 
@@ -98,7 +126,7 @@ func (i *io) IOWrite(address uint16, data byte) {
 		i.timer.tacReg = data
 	case interruptFlagRegisterAddr:
 		i.ifReg = data
-	case oamDmaRegisterAddr:
+	case OamDmaRegisterAddr:
 		i.dma.start(data)
 		i.logger.Debugf("DMA STARTED\n")
 	}
