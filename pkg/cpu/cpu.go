@@ -22,10 +22,6 @@ const (
 	joypadIOAddr                uint16 = 0xFF00
 	serialTransferDataIOAddr    uint16 = 0xFF01
 	serialTransferControlIOAddr uint16 = 0xFF02
-
-	interruptFlagIOAddr uint16 = 0xFF0F
-
-	interruptEnableAddr uint16 = 0xFFFF
 )
 
 type CPU struct {
@@ -106,7 +102,7 @@ func (c *CPU) Step() bool {
 		// CPU is halted at this point
 		c.emulateCpuCycles(1)
 
-		if c.bus.BusRead(interruptFlagIOAddr) != 0x0 {
+		if c.bus.BusRead(bus.InterruptFlagIOAddr) != 0x0 {
 			c.Halted = false
 		}
 	}

@@ -8,8 +8,8 @@ import (
 	"github.com/mikeletux/goboy/pkg/cart"
 	"github.com/mikeletux/goboy/pkg/config"
 	"github.com/mikeletux/goboy/pkg/cpu"
-	"github.com/mikeletux/goboy/pkg/lcd"
 	"github.com/mikeletux/goboy/pkg/log"
+	"github.com/mikeletux/goboy/pkg/ui"
 	"os"
 	"sync"
 	"time"
@@ -53,7 +53,7 @@ func main() {
 	}(die)
 
 	// Build UI
-	gbScreen := lcd.NewGameboyScreen(logger, memoryBus)
+	gbScreen := ui.NewGameboyScreen(logger, memoryBus)
 
 	for {
 		time.Sleep(1000 * time.Microsecond)

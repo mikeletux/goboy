@@ -34,7 +34,7 @@ func (c *CPU) timerTick() {
 		if tima == 0xFF {
 			c.setTima(c.getTma())
 
-			c.requestInterrupt(timerInterruptFlag)
+			c.bus.RequestInterrupt(timerInterruptFlag)
 		}
 	}
 }

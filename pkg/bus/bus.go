@@ -18,6 +18,9 @@ type DataBusInterface interface {
 
 	// Methods regarding DMA
 	DmaTick()
+
+	// Metods regarding interrupts
+	RequestInterrupt(interruptType byte)
 }
 
 // Bus represents the whole Game boy bus
@@ -171,4 +174,9 @@ func (b *Bus) DmaTick() {
 		b.logger.Debugf("DMA DONE!!!!!")
 		time.Sleep(2 * time.Second) // HACK
 	}
+}
+
+func (b *Bus) RequestInterrupt(interruptType byte) {
+	interrupts := b.BusRead(InterruptFlagIOAddr)
+	b.BusWrite(InterruptFlagIOAddr, interrupts|interruptType)
 }

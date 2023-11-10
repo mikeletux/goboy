@@ -38,3 +38,7 @@ const (
 	HighRamEnd                    uint16 = 0xFFFE
 	InterruptEnableRegister       uint16 = 0xFFFF
 )
+
+const (
+	InterruptFlagIOAddr uint16 = 0xFF0F
+)
