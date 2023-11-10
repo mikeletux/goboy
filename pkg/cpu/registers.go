@@ -1,6 +1,9 @@
 package cpu
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/mikeletux/goboy/pkg/common"
+)
 
 // Registers model all CPU registers from Gameboy
 type Registers struct {
@@ -38,76 +41,62 @@ func (r *Registers) GetHL() uint16 {
 
 // SetAF sets a 16Bit value between registers A and F
 func (r *Registers) SetAF(value uint16) {
-	r.A, r.F = getHighAndLowBytes(value)
+	r.A, r.F = common.GetHighAndLowBytes(value)
 }
 
 // SetBC sets a 16Bit value between registers B and C
 func (r *Registers) SetBC(value uint16) {
-	r.B, r.C = getHighAndLowBytes(value)
+	r.B, r.C = common.GetHighAndLowBytes(value)
 }
 
 // SetDE sets a 16Bit value between registers D and E
 func (r *Registers) SetDE(value uint16) {
-	r.D, r.E = getHighAndLowBytes(value)
+	r.D, r.E = common.GetHighAndLowBytes(value)
 }
 
 // SetHL sets a 16Bit value between registers H and L
 func (r *Registers) SetHL(value uint16) {
-	r.H, r.L = getHighAndLowBytes(value)
+	r.H, r.L = common.GetHighAndLowBytes(value)
 }
 
 // SetFZ sets Zero flag (Z) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFZ(bit bool) {
-	r.F = getBitMask(r.F, 7, bit)
+	r.F = common.GetBitMask(r.F, 7, bit)
 }
 
 // GetFZ returns if the Z bit is set or not.
 func (r *Registers) GetFZ() bool {
-	return getBitRegister(r.F, 7)
+	return common.GetBitRegister(r.F, 7)
 }
 
 // SetFN sets Subtraction flag (N) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFN(bit bool) {
-	r.F = getBitMask(r.F, 6, bit)
+	r.F = common.GetBitMask(r.F, 6, bit)
 }
 
 // GetFN returns if the N bit is set or not.
 func (r *Registers) GetFN() bool {
-	return getBitRegister(r.F, 6)
+	return common.GetBitRegister(r.F, 6)
 }
 
 // SetFH sets Half Carry flag (H) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFH(bit bool) {
-	r.F = getBitMask(r.F, 5, bit)
+	r.F = common.GetBitMask(r.F, 5, bit)
 }
 
 // GetFH returns if the H bit is set or not.
 func (r *Registers) GetFH() bool {
-	return getBitRegister(r.F, 5)
+	return common.GetBitRegister(r.F, 5)
 }
 
 // SetFC sets Carry flag (C) from F to bit value. True means 1 whilst false means 0.
 func (r *Registers) SetFC(bit bool) {
-	r.F = getBitMask(r.F, 4, bit)
+	r.F = common.GetBitMask(r.F, 4, bit)
 }
 
 // GetFC returns if the C bit is set or not.
 func (r *Registers) GetFC() bool {
-	return getBitRegister(r.F, 4)
-}
-
-func getBitMask(regValue byte, bitNumber int, bit bool) byte {
-	if bit {
-		return regValue | 1<<bitNumber
-	}
-	return regValue & ^(1 << bitNumber)
-}
-
-func getBitRegister(regValue byte, bitNumber int) bool {
-	if (regValue & (1 << bitNumber)) == 0x0 {
-		return false
-	}
-	return true
+	return common.GetBitRegister(r.F, 4)
 }
 
 // FetchDataFromRegisters returns the register value given its register type constant
@@ -188,10 +177,5 @@ func (r *Registers) SetDataToRegisters(registerType int, data uint16) error {
 func (r *Registers) GetPCAndIncrement() (pc uint16) {
 	pc = r.PC
 	r.PC++
-	return
-}
-
-func getHighAndLowBytes(value uint16) (high, low byte) {
-	high, low = byte(value>>8), byte(value&0xFF)
 	return
 }
