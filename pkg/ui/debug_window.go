@@ -1,4 +1,4 @@
-package lcd
+package ui
 
 import (
 	"github.com/mikeletux/goboy/pkg/bus"

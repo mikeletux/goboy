@@ -12,12 +12,12 @@ const (
 	scale               = 4
 )
 
-type GameboyScreen struct {
+type UI struct {
 	window      *GameboyWindow
 	debugWindow *GameboyDebugWindow
 }
 
-func NewGameboyScreen(logger log.Logger, bus bus.DataBusInterface) *GameboyScreen {
+func NewGameboyScreen(logger log.Logger, bus bus.DataBusInterface) *UI {
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
 		panic(err)
 	}
@@ -36,17 +36,17 @@ func NewGameboyScreen(logger log.Logger, bus bus.DataBusInterface) *GameboyScree
 	//	x, y := gameBoyWindow.sdlWindow.GetPosition()
 	//	gameBoyDebugWindow.sdlWindow.SetPosition(x+gameBoyScreenWidth+10, y)
 
-	return &GameboyScreen{
+	return &UI{
 		//		window:      gameBoyWindow,
 		debugWindow: gameBoyDebugWindow,
 	}
 }
 
-func (g *GameboyScreen) UpdateUI() {
+func (g *UI) UpdateUI() {
 	g.debugWindow.updateWindow()
 }
 
-func (g *GameboyScreen) DestroyWindow() {
+func (g *UI) DestroyWindow() {
 	g.window.sdlWindow.Destroy()
 	sdl.Quit()
 }
